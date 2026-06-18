@@ -1,0 +1,72 @@
+# ========================
+# .NET / Backend
+# ========================
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Development.json
+
+# ========================
+# Flutter / Frontend
+# ========================
+# Dart/Flutter
+.dart_tool/
+.packages
+build/
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# Android
+fe/autowash_pro/android/.gradle/
+fe/autowash_pro/android/app/debug/
+fe/autowash_pro/android/app/profile/
+fe/autowash_pro/android/app/release/
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+
+# iOS
+fe/autowash_pro/ios/Pods/
+fe/autowash_pro/ios/.symlinks/
+fe/autowash_pro/ios/Flutter/Flutter.framework
+fe/autowash_pro/ios/Flutter/Flutter.podspec
+fe/autowash_pro/ios/Flutter/Generated.xcconfig
+fe/autowash_pro/ios/Flutter/app.flx
+fe/autowash_pro/ios/Flutter/engine/
+fe/autowash_pro/ios/Flutter/flutter_assets/
+fe/autowash_pro/ios/ServiceDefinitions.json
+fe/autowash_pro/ios/Runner/GeneratedPluginRegistrant.*
+
+# Web
+fe/autowash_pro/web/favicon.png
+
+# ========================
+# IDE
+# ========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Misc
+# ========================
+*.log
+*.cache
+.gemini/
