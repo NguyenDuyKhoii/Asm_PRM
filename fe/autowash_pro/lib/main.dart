@@ -26,7 +26,7 @@ class AutoWashProApp extends StatelessWidget {
       child: MaterialApp(
         title: 'AutoWash Pro',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
+        theme: AppTheme.lightTheme,
         home: const SplashScreen(),
       ),
     );
@@ -80,11 +80,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF667EEA), Color(0xFF764BA2), Color(0xFF0F0F23)],
-          ),
+          color: Colors.white,
         ),
         child: Center(
           child: AnimatedBuilder(
@@ -101,16 +97,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
+                          color: AppTheme.primaryBlue.withAlpha(25),
                           borderRadius: BorderRadius.circular(36),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 30, spreadRadius: 5)],
+                          boxShadow: [BoxShadow(color: AppTheme.primaryBlue.withAlpha(30), blurRadius: 30, spreadRadius: 5)],
                         ),
-                        child: const Icon(Icons.local_car_wash_rounded, size: 64, color: Colors.white),
+                        child: const Icon(Icons.local_car_wash_rounded, size: 64, color: AppTheme.primaryBlue),
                       ),
                       const SizedBox(height: 24),
-                      const Text('AutoWash Pro', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
+                      const Text('AutoWash Pro', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -1)),
                       const SizedBox(height: 8),
-                      Text('Smart Car Wash Booking', style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.7))),
+                      Text('Smart Car Wash Booking', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
                     ],
                   ),
                 ),

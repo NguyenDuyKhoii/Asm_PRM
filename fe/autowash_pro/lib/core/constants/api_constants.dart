@@ -1,23 +1,24 @@
+import 'package:flutter/foundation.dart';
+
 class ApiConstants {
-  static const String baseUrl = 'http://10.0.2.2:5000/api'; // Android emulator
-  // static const String baseUrl = 'http://localhost:5000/api'; // iOS simulator
+  static String get baseUrl => kIsWeb ? 'http://localhost:5048/api' : 'http://10.0.2.2:5048/api';
   
   // Auth
-  static const String register = '$baseUrl/auth/register';
-  static const String login = '$baseUrl/auth/login';
+  static String get register => '$baseUrl/auth/register';
+  static String get login => '$baseUrl/auth/login';
   
   // Services
-  static const String services = '$baseUrl/services';
+  static String get services => '$baseUrl/services';
   
   // Bookings
-  static const String availableSlots = '$baseUrl/bookings/available-slots';
-  static const String bookingSummary = '$baseUrl/bookings/summary';
-  static const String createBooking = '$baseUrl/bookings';
-  static const String myBookings = '$baseUrl/bookings/my';
+  static String get availableSlots => '$baseUrl/bookings/available-slots';
+  static String get bookingSummary => '$baseUrl/bookings/summary';
+  static String get createBooking => '$baseUrl/bookings';
+  static String get myBookings => '$baseUrl/bookings/my';
   
   // Users
-  static const String userTier = '$baseUrl/users/tier';
+  static String get userTier => '$baseUrl/users/tier';
   
   // Vehicles
-  static const String vehicles = '$baseUrl/vehicles';
+  static String get vehicles => '$baseUrl/vehicles';
 }

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,196 +25,214 @@ class BookingSummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0F0F23), Color(0xFF1A1A2E), Color(0xFF0A0A1A)],
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Background photo subtle texture
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.08,
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade50),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Consumer<BookingProvider>(
-            builder: (context, provider, _) {
-              final summary = provider.bookingSummary;
-              if (summary == null) return const Center(child: CircularProgressIndicator());
+          
+          SafeArea(
+            child: Consumer<BookingProvider>(
+              builder: (context, provider, _) {
+                final summary = provider.bookingSummary;
+                if (summary == null) return const Center(child: CircularProgressIndicator());
 
-              return Column(
-                children: [
-                  // AppBar
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppTheme.cardBg,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF2A2A3E)),
-                            ),
-                            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text('Xác nhận đặt lịch', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
-                      ],
-                    ),
-                  ).animate().fadeIn(duration: 300.ms),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
+                return Column(
+                  children: [
+                    // AppBar Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      child: Row(
                         children: [
-                          // Receipt Card
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: AppTheme.cardBg,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: const Color(0xFF2A2A3E)),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 16, offset: const Offset(0, 4))
+                                ],
+                              ),
+                              child: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 16),
                             ),
-                            child: Column(
-                              children: [
-                                // Header
-                                Container(
-                                  width: 60, height: 60,
-                                  decoration: BoxDecoration(
-                                    gradient: AppTheme.primaryGradient,
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 30),
-                                ),
-                                const SizedBox(height: 16),
-                                Text('Chi tiết đặt lịch', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white)),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Xác nhận đặt lịch',
+                            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
+                          ),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: 300.ms),
 
-                                const SizedBox(height: 24),
-                                _divider(),
-
-                                // Service
-                                _infoRow(Icons.local_car_wash, 'Dịch vụ', summary.serviceName),
-                                _divider(),
-
-                                // Vehicle
-                                _infoRow(Icons.directions_car, 'Xe', '${summary.vehiclePlate} (${summary.vehicleTypeName})'),
-                                _divider(),
-
-                                // Date
-                                _infoRow(Icons.calendar_today, 'Ngày', DateFormat('dd/MM/yyyy').format(summary.bookingDate)),
-                                _divider(),
-
-                                // Time
-                                _infoRow(Icons.access_time, 'Giờ', summary.timeSlotDisplay),
-                                _divider(),
-
-                                // Tier
-                                _infoRow(Icons.workspace_premium, 'Hạng', summary.tierName),
-                                _divider(),
-
-                                const SizedBox(height: 16),
-
-                                // Pricing
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Giá gốc', style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
-                                    Text(_formatCurrency(summary.originalPrice), style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
-                                  ],
-                                ),
-
-                                if (summary.discountAmount > 0) ...[
-                                  const SizedBox(height: 10),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          children: [
+                            // Receipt Card
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(color: Colors.grey.shade100, width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 24, offset: const Offset(0, 8))
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  // Header Icon
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    width: 64, height: 64,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.success.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
+                                      color: AppTheme.primaryBlue.withAlpha(15),
+                                      shape: BoxShape.circle,
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.discount, color: AppTheme.success, size: 16),
-                                            const SizedBox(width: 6),
-                                            Text(summary.perkApplied, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.success, fontWeight: FontWeight.w600)),
-                                          ],
+                                    child: const Center(
+                                      child: Icon(Icons.receipt_long_rounded, color: AppTheme.primaryBlue, size: 32),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Chi tiết đặt lịch',
+                                    style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.3),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _divider(),
+
+                                  // Details list with modern layout
+                                  _infoRow(Icons.local_car_wash_rounded, 'Dịch vụ', summary.serviceName, Colors.blue),
+                                  _divider(),
+                                  _infoRow(Icons.directions_car_filled_rounded, 'Xe', '${summary.vehiclePlate} (${summary.vehicleTypeName})', Colors.teal),
+                                  _divider(),
+                                  _infoRow(Icons.calendar_month_rounded, 'Ngày', DateFormat('dd/MM/yyyy').format(summary.bookingDate), Colors.orange),
+                                  _divider(),
+                                  _infoRow(Icons.access_time_filled_rounded, 'Giờ', summary.timeSlotDisplay, Colors.purple),
+                                  _divider(),
+                                  _infoRow(Icons.workspace_premium_rounded, 'Hạng thành viên', summary.tierName, Colors.amber),
+                                  _divider(),
+
+                                  const SizedBox(height: 20),
+
+                                  // Original Pricing
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Giá gốc', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
+                                      Text(_formatCurrency(summary.originalPrice), style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w700)),
+                                    ],
+                                  ),
+
+                                  if (summary.discountAmount > 0) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.success.withAlpha(15),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(color: AppTheme.success.withAlpha(30), width: 1.5),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.discount_rounded, color: AppTheme.success, size: 16),
+                                              const SizedBox(width: 8),
+                                              Text(summary.perkApplied, style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.success, fontWeight: FontWeight.w800)),
+                                            ],
+                                          ),
+                                          Text(
+                                            '-${_formatCurrency(summary.discountAmount)}',
+                                            style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.success, fontWeight: FontWeight.w900),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 18),
+                                  
+                                  // Coupon dotted line divider
+                                  Row(
+                                    children: List.generate(
+                                      20,
+                                      (index) => Expanded(
+                                        child: Container(
+                                          color: index % 2 == 0 ? Colors.transparent : Colors.grey.shade300,
+                                          height: 1.5,
                                         ),
-                                        Text(
-                                          '-${_formatCurrency(summary.discountAmount)}',
-                                          style: GoogleFonts.inter(fontSize: 14, color: AppTheme.success, fontWeight: FontWeight.w700),
-                                        ),
-                                      ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+
+                                  // Final Total
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Tổng thanh toán', style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.2)),
+                                      Text(
+                                        _formatCurrency(summary.finalPrice),
+                                        style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ).animate().fadeIn(duration: 500.ms, delay: 150.ms).slideY(begin: 0.05),
+
+                            const SizedBox(height: 20),
+
+                            // Note Banner
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryBlue.withAlpha(15),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: AppTheme.primaryBlue.withAlpha(30), width: 1.5),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.info_outline_rounded, color: AppTheme.primaryBlue, size: 22),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Thanh toán tại trạm. Vui lòng xuất trình mã QR khi đến trạm.',
+                                      style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.primaryBlue, fontWeight: FontWeight.w700),
                                     ),
                                   ),
                                 ],
+                              ),
+                            ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
 
-                                const SizedBox(height: 16),
-                                _divider(),
-                                const SizedBox(height: 16),
-
-                                // Total
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Tổng thanh toán', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
-                                    Text(
-                                      _formatCurrency(summary.finalPrice),
-                                      style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w900, color: AppTheme.accentCyan),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ).animate().fadeIn(duration: 500.ms, delay: 200.ms).slideY(begin: 0.1),
-
-                          const SizedBox(height: 16),
-
-                          // Note
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppTheme.info.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: AppTheme.info.withValues(alpha: 0.2)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.info_outline, color: AppTheme.info, size: 20),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'Thanh toán tại trạm. Vui lòng xuất trình mã QR khi đến.',
-                                    style: GoogleFonts.inter(fontSize: 12, color: AppTheme.info),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ).animate().fadeIn(duration: 400.ms, delay: 400.ms),
-
-                          const SizedBox(height: 30),
-                        ],
+                            const SizedBox(height: 30),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  // Confirm Button
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.successGradient,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [BoxShadow(color: AppTheme.success.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 6))],
-                        ),
+                    // Confirm Action Button Area
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 58,
                         child: ElevatedButton(
                           onPressed: provider.isLoading
                               ? null
@@ -224,49 +243,65 @@ class BookingSummaryScreen extends StatelessWidget {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            backgroundColor: AppTheme.primaryBlue,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey.shade200,
+                            elevation: 8,
+                            shadowColor: AppTheme.primaryBlue.withAlpha(80),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                           ),
                           child: provider.isLoading
-                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.check_circle, color: Colors.white),
+                                    const Icon(Icons.check_circle_rounded, color: Colors.white),
                                     const SizedBox(width: 8),
-                                    Text('Xác nhận đặt lịch', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                                    Text('Xác nhận đặt lịch', style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
                                   ],
                                 ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(IconData icon, String label, String value, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.textMuted, size: 20),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withAlpha(15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
           const SizedBox(width: 12),
-          Text(label, style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textMuted)),
+          Text(label, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
           const Spacer(),
-          Flexible(child: Text(value, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white), textAlign: TextAlign.right)),
+          Flexible(
+            child: Text(
+              value,
+              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+              textAlign: TextAlign.right,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _divider() {
-    return Container(height: 1, color: const Color(0xFF2A2A3E));
+    return const Divider(height: 1, thickness: 1, color: Color(0xFFF9FAFB));
   }
 }

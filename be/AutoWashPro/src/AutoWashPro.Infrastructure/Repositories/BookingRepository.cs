@@ -20,18 +20,27 @@ public class BookingRepository : IBookingRepository
     {
         var normalizedDate = date.Date;
 
-        var slots = await _context.TimeSlots
+        var rawSlots = await _context.TimeSlots
             .Where(ts => ts.Date.Date == normalizedDate)
-            .Select(ts => new AvailableSlotDTO
+            .Select(ts => new
             {
                 TimeSlotId = ts.Id,
-                StartTime = ts.StartTime.ToString(@"hh\:mm"),
-                EndTime = ts.EndTime.ToString(@"hh\:mm"),
-                IsAvailable = ts.Bookings.Count(b => b.Status != BookingStatus.Cancelled) < ts.MaxCapacity,
-                RemainingCapacity = ts.MaxCapacity - ts.Bookings.Count(b => b.Status != BookingStatus.Cancelled)
+                ts.StartTime,
+                ts.EndTime,
+                ActiveBookingsCount = ts.Bookings.Count(b => b.Status != BookingStatus.Cancelled),
+                ts.MaxCapacity
             })
             .OrderBy(s => s.StartTime)
             .ToListAsync();
+
+        var slots = rawSlots.Select(ts => new AvailableSlotDTO
+        {
+            TimeSlotId = ts.TimeSlotId,
+            StartTime = ts.StartTime.ToString(@"hh\:mm"),
+            EndTime = ts.EndTime.ToString(@"hh\:mm"),
+            IsAvailable = ts.ActiveBookingsCount < ts.MaxCapacity,
+            RemainingCapacity = ts.MaxCapacity - ts.ActiveBookingsCount
+        }).ToList();
 
         return slots;
     }

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,217 +35,268 @@ class _HomeScreenState extends State<HomeScreen> {
     final booking = Provider.of<BookingProvider>(context);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0F0F23), Color(0xFF1A1A2E), Color(0xFF0A0A1A)],
+      body: Stack(
+        children: [
+          // Photography Background Image
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.10,
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
+          
+          // Main Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
 
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Xin chào! 👋',
-                          style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary),
-                        ),
-                        Text(
-                          auth.user?.fullName ?? 'Khách',
-                          style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        await auth.logout();
-                        if (mounted) {
-                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardBg,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF2A2A3E)),
-                        ),
-                        child: const Icon(Icons.logout_rounded, color: AppTheme.textSecondary, size: 22),
-                      ),
-                    ),
-                  ],
-                ).animate().fadeIn(duration: 400.ms),
-
-                const SizedBox(height: 24),
-
-                // Tier Card
-                if (booking.userTier != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.getTierGradient(booking.userTier!.tierName),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.gradientStart.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('AutoWash Pro', style: GoogleFonts.inter(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w500)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                booking.userTier!.tierName.toUpperCase(),
-                                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          '${booking.userTier!.loyaltyPoints}',
-                          style: GoogleFonts.inter(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white),
-                        ),
-                        Text('Điểm tích lũy', style: GoogleFonts.inter(fontSize: 14, color: Colors.white70)),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            _tierInfoChip(Icons.calendar_today, 'Đặt trước ${booking.userTier!.maxBookingDays} ngày'),
-                            const SizedBox(width: 8),
-                            _tierInfoChip(Icons.discount, 'Giảm ${booking.userTier!.discountPercentage.toStringAsFixed(0)}%'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(duration: 500.ms, delay: 200.ms).slideY(begin: 0.1),
-
-                const SizedBox(height: 28),
-
-                // Quick Actions
-                Text('Dịch vụ', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: _actionCard(
-                        icon: Icons.calendar_month_rounded,
-                        title: 'Đặt lịch\nrửa xe',
-                        gradient: AppTheme.primaryGradient,
-                        onTap: () {
-                          booking.resetBookingFlow();
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _actionCard(
-                        icon: Icons.history_rounded,
-                        title: 'Lịch sử\nđặt lịch',
-                        gradient: const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF009688)]),
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const MyBookingsScreen()));
-                        },
-                      ),
-                    ),
-                  ],
-                ).animate().fadeIn(duration: 500.ms, delay: 400.ms).slideY(begin: 0.1),
-
-                const SizedBox(height: 28),
-
-                // Services Preview
-                Text('Dịch vụ phổ biến', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
-                const SizedBox(height: 16),
-
-                if (booking.services.isNotEmpty)
-                  ...booking.services.take(3).map((service) {
-                    final index = booking.services.indexOf(service);
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.cardBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF2A2A3E)),
-                      ),
-                      child: Row(
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 50, height: 50,
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.primaryGradient,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(Icons.local_car_wash, color: Colors.white, size: 24),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(service.name, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
-                                const SizedBox(height: 4),
-                                Text('${service.formattedDuration}', style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
-                              ],
-                            ),
-                          ),
                           Text(
-                            service.formattedPrice,
-                            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.accentCyan),
+                            'Xin chào,',
+                            style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary, letterSpacing: 0.5),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            auth.user?.fullName ?? 'Khách',
+                            style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, height: 1.1),
                           ),
                         ],
                       ),
-                    ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: 500 + index * 100)).slideX(begin: 0.1);
-                  }),
+                      GestureDetector(
+                        onTap: () async {
+                          await auth.logout();
+                          if (mounted) {
+                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, spreadRadius: 1)],
+                          ),
+                          child: const Icon(Icons.logout_rounded, color: AppTheme.textSecondary, size: 22),
+                        ),
+                      ),
+                    ],
+                  ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2),
 
-                const SizedBox(height: 30),
-              ],
+                  const SizedBox(height: 32),
+
+                  // Tier Card
+                  if (booking.userTier != null)
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.getTierGradient(booking.userTier!.tierName),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(color: AppTheme.getTierGradient(booking.userTier!.tierName).colors.first.withAlpha(76), blurRadius: 24, offset: const Offset(0, 12)),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          // Card Background pattern
+                          Positioned(
+                            right: -20, top: -20,
+                            child: Icon(Icons.star_rounded, size: 140, color: Colors.white.withAlpha(30)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(28),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Thẻ thành viên', style: GoogleFonts.outfit(fontSize: 14, color: Colors.white.withAlpha(200), fontWeight: FontWeight.w500)),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withAlpha(50),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: Colors.white.withAlpha(76)),
+                                      ),
+                                      child: Text(
+                                        booking.userTier!.tierName.toUpperCase(),
+                                        style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1.5),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${booking.userTier!.loyaltyPoints}',
+                                      style: GoogleFonts.outfit(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: Text('điểm', style: GoogleFonts.outfit(fontSize: 16, color: Colors.white.withAlpha(200), fontWeight: FontWeight.w600)),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      _tierInfoChip(Icons.event_available_rounded, 'Đặt trước ${booking.userTier!.maxBookingDays} ngày'),
+                                      const SizedBox(width: 12),
+                                      _tierInfoChip(Icons.local_offer_rounded, 'Giảm ${booking.userTier!.discountPercentage.toStringAsFixed(0)}%'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: 600.ms, delay: 200.ms).scale(begin: const Offset(0.95, 0.95)),
+
+                  const SizedBox(height: 36),
+
+                  // Quick Actions
+                  Text('Trải nghiệm dịch vụ', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.calendar_month_rounded,
+                          title: 'Đặt lịch\nngay',
+                          gradient: AppTheme.primaryGradient,
+                          onTap: () {
+                            booking.resetBookingFlow();
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _actionCard(
+                          icon: Icons.history_rounded,
+                          title: 'Lịch sử\nđặt lịch',
+                          gradient: const LinearGradient(colors: [Color(0xFF28D8A1), Color(0xFF00C6FF)]),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const MyBookingsScreen()));
+                          },
+                        ),
+                      ),
+                    ],
+                  ).animate().fadeIn(duration: 600.ms, delay: 400.ms).slideY(begin: 0.1),
+
+                  const SizedBox(height: 36),
+
+                  // Services Preview
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Dịch vụ phổ biến', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                      Text('Xem tất cả', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (booking.services.isNotEmpty)
+                    ...booking.services.take(3).map((service) {
+                      final index = booking.services.indexOf(service);
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 20, offset: const Offset(0, 5))],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 56, height: 56,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: const Icon(Icons.local_car_wash_rounded, color: AppTheme.primaryBlue, size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(service.name, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.timer_outlined, size: 14, color: AppTheme.textSecondary),
+                                        const SizedBox(width: 4),
+                                        Text(service.formattedDuration, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue.withAlpha(15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  service.formattedPrice,
+                                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.primaryBlue),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ).animate().fadeIn(duration: 500.ms, delay: Duration(milliseconds: 600 + index * 100)).slideX(begin: 0.1);
+                    }),
+
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _tierInfoChip(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withAlpha(40),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withAlpha(50)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 14),
-          const SizedBox(width: 4),
-          Text(text, style: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w500)),
+          Icon(icon, color: Colors.white, size: 16),
+          const SizedBox(width: 6),
+          Text(text, style: GoogleFonts.outfit(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -254,19 +306,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 130,
-        padding: const EdgeInsets.all(20),
+        height: 150,
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))],
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(color: gradient.colors.first.withAlpha(100), blurRadius: 20, offset: const Offset(0, 10))
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, color: Colors.white, size: 32),
-            Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white, height: 1.3)),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(50),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: Colors.white, size: 28),
+            ),
+            Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2)),
           ],
         ),
       ),
