@@ -122,13 +122,15 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> addVehicle(String licensePlate, int vehicleType, {String? imageUrl}) async {
+  Future<Map<String, dynamic>> addVehicle(String licensePlate, int vehicleType, {String? name, String? color, String? imageUrl}) async {
     final response = await http.post(
       Uri.parse(ApiConstants.vehicles),
       headers: _headers,
       body: jsonEncode({
         'licensePlate': licensePlate,
         'vehicleType': vehicleType,
+        if (name != null) 'name': name,
+        if (color != null) 'color': color,
         if (imageUrl != null) 'imageUrl': imageUrl,
       }),
     );

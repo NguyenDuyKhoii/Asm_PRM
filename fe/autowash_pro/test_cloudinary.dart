@@ -8,6 +8,10 @@ void main() async {
   const String apiKey = '263482225152376';
   const String apiSecret = '8za2qN0Xehd_2cen7tWq0bgCTXE';
 
+  // Download a real image
+  final imageBytes = await http.readBytes(Uri.parse('https://picsum.photos/200'));
+  File('test.jpg').writeAsBytesSync(imageBytes);
+
   int timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   String toSign = 'timestamp=$timestamp$apiSecret';
   String signature = sha1.convert(utf8.encode(toSign)).toString();
@@ -16,12 +20,8 @@ void main() async {
   var request = http.MultipartRequest('POST', uri)
     ..fields['api_key'] = apiKey
     ..fields['timestamp'] = timestamp.toString()
-    ..fields['signature'] = signature;
-    
-  // create dummy file
-  File dummy = File('test.txt');
-  dummy.writeAsStringSync('dummy content');
-  request.files.add(await http.MultipartFile.fromPath('file', dummy.path));
+    ..fields['signature'] = signature
+    ..files.add(await http.MultipartFile.fromPath('file', 'test.jpg'));
 
   var response = await request.send();
   var responseData = await response.stream.bytesToString();

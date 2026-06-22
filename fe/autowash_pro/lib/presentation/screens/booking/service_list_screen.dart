@@ -198,7 +198,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                             isPopular: isPopular,
                             onTap: () {
                               provider.selectService(service);
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen(isSelectionMode: true)));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen(isSelectionMode: true, isFromServiceList: true)));
                             },
                           ).animate().fadeIn(duration: 450.ms, delay: Duration(milliseconds: index * 60)).slideY(begin: 0.05);
                         },

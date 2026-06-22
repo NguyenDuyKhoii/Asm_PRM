@@ -21,6 +21,8 @@ class AddVehicleScreen extends StatefulWidget {
 class _AddVehicleScreenState extends State<AddVehicleScreen> {
   final _formKey = GlobalKey<FormState>();
   final _licensePlateController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _colorController = TextEditingController();
   int _selectedType = 0; // 0 for Car, 1 for Motorcycle
   XFile? _selectedImage;
   bool _isUploading = false;
@@ -28,6 +30,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   @override
   void dispose() {
     _licensePlateController.dispose();
+    _nameController.dispose();
+    _colorController.dispose();
     super.dispose();
   }
 
@@ -68,7 +72,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         var json = jsonDecode(responseData);
         return json['secure_url'];
       } else {
-        print('Cloudinary Error: ${response.statusCode}');
+        var errorData = await response.stream.bytesToString();
+        print('Cloudinary Error: ${response.statusCode} - $errorData');
       }
     } catch (e) {
       print('Cloudinary Exception: $e');
@@ -97,6 +102,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         final success = await provider.addVehicle(
           _licensePlateController.text.trim(),
           _selectedType,
+          name: _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : null,
+          color: _colorController.text.trim().isNotEmpty ? _colorController.text.trim() : null,
           imageUrl: uploadedUrl,
         );
 
@@ -315,6 +322,50 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                               ],
                             ),
                           ).animate().fadeIn(duration: 400.ms, delay: 300.ms).slideX(begin: 0.05),
+                          
+                          const SizedBox(height: 24),
+
+                          Text(
+                            'Tên phương tiện (tùy chọn)',
+                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                          ).animate().fadeIn(duration: 400.ms, delay: 350.ms).slideX(begin: 0.05),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _nameController,
+                            style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                            decoration: InputDecoration(
+                              hintText: 'VD: Sedan Luxury',
+                              hintStyle: GoogleFonts.outfit(color: Colors.grey.shade400),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 2)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
+                          ).animate().fadeIn(duration: 400.ms, delay: 400.ms).slideX(begin: 0.05),
+
+                          const SizedBox(height: 24),
+
+                          Text(
+                            'Màu sắc (tùy chọn)',
+                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                          ).animate().fadeIn(duration: 400.ms, delay: 450.ms).slideX(begin: 0.05),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _colorController,
+                            style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                            decoration: InputDecoration(
+                              hintText: 'VD: Trắng ngọc trai',
+                              hintStyle: GoogleFonts.outfit(color: Colors.grey.shade400),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 2)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
+                          ).animate().fadeIn(duration: 400.ms, delay: 500.ms).slideX(begin: 0.05),
 
                           const SizedBox(height: 80), // Padding for bottom button
                         ],

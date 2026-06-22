@@ -107,9 +107,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 child: const Icon(Icons.chevron_right_rounded, size: 16, color: AppTheme.pristineNavy),
                               ),
                             ),
-                            daysOfWeekStyle: DaysOfWeekStyle(
-                              weekdayStyle: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.bold),
-                              weekendStyle: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.bold),
+                            calendarBuilders: CalendarBuilders(
+                              dowBuilder: (context, day) {
+                                final text = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.weekday == 7 ? 0 : day.weekday];
+                                return Center(
+                                  child: Text(text, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
+                                );
+                              },
+                              headerTitleBuilder: (context, day) {
+                                return Text(
+                                  'Tháng ${day.month}, ${day.year}',
+                                  style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy),
+                                );
+                              },
                             ),
                             calendarStyle: CalendarStyle(
                               todayDecoration: const BoxDecoration(color: Colors.transparent),
@@ -156,13 +166,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      provider.selectedVehicle?.vehicleTypeName ?? 'Chưa chọn xe',
+                                      provider.selectedVehicle?.name?.isNotEmpty == true 
+                                          ? provider.selectedVehicle!.name! 
+                                          : (provider.selectedVehicle?.vehicleTypeName ?? 'Chưa chọn xe'),
                                       style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       provider.selectedVehicle != null 
-                                          ? 'Biển số: ${provider.selectedVehicle!.licensePlate}' 
+                                          ? 'ID: ${provider.selectedVehicle!.licensePlate}${provider.selectedVehicle!.color?.isNotEmpty == true ? ' • ${provider.selectedVehicle!.color}' : ''}' 
                                           : 'Vui lòng chọn phương tiện',
                                       style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary),
                                     ),

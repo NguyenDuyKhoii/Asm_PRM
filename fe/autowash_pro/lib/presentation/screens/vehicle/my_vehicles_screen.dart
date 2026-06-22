@@ -10,14 +10,44 @@ import 'package:autowash_pro/presentation/screens/booking/calendar_screen.dart';
 
 class MyVehiclesScreen extends StatefulWidget {
   final bool isSelectionMode;
+  final bool isFromServiceList;
   
-  const MyVehiclesScreen({super.key, this.isSelectionMode = false});
+  const MyVehiclesScreen({super.key, this.isSelectionMode = false, this.isFromServiceList = false});
 
   @override
   State<MyVehiclesScreen> createState() => _MyVehiclesScreenState();
 }
 
 class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
+  void _confirmDelete(BuildContext context, VehicleModel vehicle, BookingProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Xóa phương tiện', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text('Bạn có chắc chắn muốn xóa phương tiện ${vehicle.licensePlate} không?', style: GoogleFonts.outfit()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Hủy', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await provider.deleteVehicle(vehicle.id);
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xóa xe thành công!'), backgroundColor: AppTheme.success));
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Xóa thất bại!'), backgroundColor: AppTheme.error));
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            child: Text('Xóa', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -241,7 +271,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      vehicle.licensePlate,
+                      vehicle.name?.isNotEmpty == true ? vehicle.name! : vehicle.vehicleTypeName,
                       style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                     ),
                     IconButton(
@@ -257,7 +287,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(6)),
-                      child: Text(vehicle.vehicleTypeName.toUpperCase(), style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                      child: Text('ID: ${vehicle.licensePlate}${vehicle.color?.isNotEmpty == true ? ' • ${vehicle.color}' : ''}', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
                     ),
                     const SizedBox(width: 8),
                     const CircleAvatar(radius: 3, backgroundColor: AppTheme.success),
@@ -454,8 +484,23 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(vehicle.licensePlate, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                                      Text(vehicle.vehicleTypeName.toUpperCase(), style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.textSecondary)),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(vehicle.name?.isNotEmpty == true ? vehicle.name! : vehicle.vehicleTypeName, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                                              Text('ID: ${vehicle.licensePlate}${vehicle.color?.isNotEmpty == true ? ' • ${vehicle.color}' : ''}', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                                            ],
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.error),
+                                            onPressed: () => _confirmDelete(context, vehicle, provider),
+                                            tooltip: 'Xóa xe',
+                                          ),
+                                        ],
+                                      ),
                                       const SizedBox(height: 12),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -511,9 +556,9 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // Nếu đang ở luồng đặt lịch (từ CalendarScreen), pop về CalendarScreen
-                          // Còn nếu ở đầu luồng (từ HomeScreen), push sang CalendarScreen
-                          if (Navigator.canPop(context)) {
+                          if (widget.isFromServiceList) {
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
+                          } else if (Navigator.canPop(context)) {
                             Navigator.pop(context);
                           } else {
                             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));

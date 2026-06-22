@@ -153,6 +153,8 @@ class VehicleModel {
   final String licensePlate;
   final String vehicleTypeName;
   final int vehicleType;
+  final String? name;
+  final String? color;
   final String? imageUrl;
 
   VehicleModel({
@@ -160,6 +162,8 @@ class VehicleModel {
     required this.licensePlate,
     required this.vehicleTypeName,
     required this.vehicleType,
+    this.name,
+    this.color,
     this.imageUrl,
   });
 
@@ -169,6 +173,8 @@ class VehicleModel {
       licensePlate: json['licensePlate'] ?? '',
       vehicleTypeName: json['vehicleTypeName'] ?? '',
       vehicleType: json['vehicleType'] ?? 0,
+      name: json['name'],
+      color: json['color'],
       imageUrl: json['imageUrl'],
     );
   }

@@ -26,6 +26,8 @@ public class VehicleRepository : IVehicleRepository
                 LicensePlate = v.LicensePlate,
                 VehicleType = v.VehicleType,
                 VehicleTypeName = v.VehicleType == VehicleType.Car ? "Ô tô" : "Xe máy",
+                Name = v.Name,
+                Color = v.Color,
                 ImageUrl = v.ImageUrl
             })
             .ToListAsync();
@@ -42,6 +44,8 @@ public class VehicleRepository : IVehicleRepository
             UserId = userId,
             LicensePlate = dto.LicensePlate,
             VehicleType = dto.VehicleType,
+            Name = dto.Name,
+            Color = dto.Color,
             ImageUrl = dto.ImageUrl,
             CreatedAt = DateTime.UtcNow
         };
@@ -55,6 +59,8 @@ public class VehicleRepository : IVehicleRepository
             LicensePlate = vehicle.LicensePlate,
             VehicleType = vehicle.VehicleType,
             VehicleTypeName = vehicle.VehicleType == VehicleType.Car ? "Ô tô" : "Xe máy",
+            Name = vehicle.Name,
+            Color = vehicle.Color,
             ImageUrl = vehicle.ImageUrl
         };
     }
