@@ -58,7 +58,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       ..fields['timestamp'] = timestamp.toString()
       ..fields['signature'] = signature
       ..files.add(kIsWeb 
-          ? http.MultipartFile.fromBytes('file', await imageFile.readAsBytes(), filename: imageFile.name) 
+          ? http.MultipartFile.fromBytes('file', await imageFile.readAsBytes(), filename: imageFile.name.contains('.') ? imageFile.name : '${imageFile.name}.jpg') 
           : await http.MultipartFile.fromPath('file', imageFile.path));
 
     try {
@@ -83,6 +83,13 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       String? uploadedUrl;
       if (_selectedImage != null) {
         uploadedUrl = await _uploadToCloudinary(_selectedImage!);
+        if (uploadedUrl == null && mounted) {
+          setState(() => _isUploading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Lỗi tải ảnh lên Cloudinary! Vui lòng thử lại.'), backgroundColor: AppTheme.error),
+          );
+          return;
+        }
       }
 
       if (mounted) {
