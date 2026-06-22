@@ -122,13 +122,14 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> addVehicle(String licensePlate, int vehicleType) async {
+  Future<Map<String, dynamic>> addVehicle(String licensePlate, int vehicleType, {String? imageUrl}) async {
     final response = await http.post(
       Uri.parse(ApiConstants.vehicles),
       headers: _headers,
       body: jsonEncode({
         'licensePlate': licensePlate,
         'vehicleType': vehicleType,
+        if (imageUrl != null) 'imageUrl': imageUrl,
       }),
     );
     return _handleResponse(response);
@@ -137,6 +138,40 @@ class ApiService {
   Future<Map<String, dynamic>> deleteVehicle(String vehicleId) async {
     final response = await http.delete(
       Uri.parse('${ApiConstants.vehicles}/$vehicleId'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== REWARDS & LOYALTY ====================
+  Future<Map<String, dynamic>> getLoyaltyHome() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.loyaltyHome),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getRewards() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.rewards),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> redeemReward(String rewardId) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.redeemReward),
+      headers: _headers,
+      body: jsonEncode({'rewardId': rewardId}),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getVouchers() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.vouchers),
       headers: _headers,
     );
     return _handleResponse(response);

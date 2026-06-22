@@ -158,6 +158,82 @@ public static class DbSeeder
             await context.TimeSlots.AddRangeAsync(timeSlots);
         }
 
+        // Seed Rewards
+        if (!await context.Rewards.AnyAsync())
+        {
+            var rewards = new List<Reward>
+            {
+                new()
+                {
+                    Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567801"),
+                    Name = "Giảm 20% lần rửa tiếp theo",
+                    Description = "Voucher giảm 20% cho 1 lần rửa xe bất kỳ. Áp dụng cho tất cả dịch vụ.",
+                    Type = RewardType.Discount,
+                    PointsCost = 50,
+                    DiscountValue = 20,
+                    ImageUrl = "discount_20",
+                    IsActive = true
+                },
+                new()
+                {
+                    Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567802"),
+                    Name = "Giảm 50% lần rửa tiếp theo",
+                    Description = "Voucher giảm 50% cho 1 lần rửa xe. Áp dụng cho dịch vụ từ 100.000đ trở lên.",
+                    Type = RewardType.Discount,
+                    PointsCost = 100,
+                    DiscountValue = 50,
+                    ImageUrl = "discount_50",
+                    IsActive = true
+                },
+                new()
+                {
+                    Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567803"),
+                    Name = "Rửa xe cơ bản miễn phí",
+                    Description = "Đổi điểm để nhận 1 lượt rửa xe cơ bản hoàn toàn miễn phí.",
+                    Type = RewardType.FreeWash,
+                    PointsCost = 150,
+                    DiscountValue = 50000,
+                    ImageUrl = "free_basic",
+                    IsActive = true
+                },
+                new()
+                {
+                    Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567804"),
+                    Name = "Rửa xe cao cấp miễn phí",
+                    Description = "Đổi điểm để nhận 1 lượt rửa xe cao cấp hoàn toàn miễn phí.",
+                    Type = RewardType.FreeWash,
+                    PointsCost = 300,
+                    DiscountValue = 100000,
+                    ImageUrl = "free_premium",
+                    IsActive = true
+                },
+                new()
+                {
+                    Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567805"),
+                    Name = "Xịt thơm nội thất",
+                    Description = "Dịch vụ xịt thơm nội thất cao cấp miễn phí kèm lần rửa xe tiếp theo.",
+                    Type = RewardType.AddOn,
+                    PointsCost = 30,
+                    DiscountValue = 30000,
+                    ImageUrl = "addon_perfume",
+                    IsActive = true
+                },
+                new()
+                {
+                    Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567806"),
+                    Name = "Phủ nano sơn xe",
+                    Description = "Dịch vụ phủ nano bảo vệ sơn xe miễn phí (trị giá 200.000đ).",
+                    Type = RewardType.AddOn,
+                    PointsCost = 400,
+                    DiscountValue = 200000,
+                    ImageUrl = "addon_nano",
+                    IsActive = true
+                }
+            };
+
+            await context.Rewards.AddRangeAsync(rewards);
+        }
+
         await context.SaveChangesAsync();
     }
 }

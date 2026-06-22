@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/data/models/service_model.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
-import 'package:autowash_pro/presentation/screens/booking/calendar_screen.dart';
+import 'package:autowash_pro/presentation/screens/vehicle/my_vehicles_screen.dart';
 
 class ServiceListScreen extends StatefulWidget {
   const ServiceListScreen({super.key});
@@ -198,7 +198,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                             isPopular: isPopular,
                             onTap: () {
                               provider.selectService(service);
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen(isSelectionMode: true)));
                             },
                           ).animate().fadeIn(duration: 450.ms, delay: Duration(milliseconds: index * 60)).slideY(begin: 0.05);
                         },

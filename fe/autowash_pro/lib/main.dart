@@ -4,6 +4,7 @@ import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/data/services/api_service.dart';
 import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
+import 'package:autowash_pro/presentation/providers/loyalty_provider.dart';
 import 'package:autowash_pro/presentation/screens/auth/login_screen.dart';
 import 'package:autowash_pro/presentation/screens/home/home_screen.dart';
 
@@ -22,6 +23,7 @@ class AutoWashProApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(apiService)),
         ChangeNotifierProvider(create: (_) => BookingProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => LoyaltyProvider(apiService)),
       ],
       child: MaterialApp(
         title: 'AutoWash Pro',

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
 
@@ -181,22 +182,26 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           final booking = provider.myBookings[index];
                           final statusColor = _getStatusColor(booking.status);
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 18),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: Colors.grey.shade100, width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(4),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                )
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
+                          return GestureDetector(
+                            onTap: () {
+                              _showETicket(context, booking);
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 18),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: Colors.grey.shade100, width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(4),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
+                                  )
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
                               child: Stack(
                                 children: [
                                   // Accent bar at the left edge
@@ -285,7 +290,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 ],
                               ),
                             ),
-                          ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: index * 60)).slideY(begin: 0.05);
+                          ),
+                        ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: index * 60)).slideY(begin: 0.05);
                         },
                       );
                     },
@@ -295,6 +301,87 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showETicket(BuildContext context, dynamic booking) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 40, offset: const Offset(0, 10))
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'E-Ticket (Vé điện tử)',
+                style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Quét mã này tại trạm để check-in',
+                style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppTheme.primaryBlue.withAlpha(50), width: 2),
+                  boxShadow: [
+                    BoxShadow(color: AppTheme.primaryBlue.withAlpha(10), blurRadius: 16, offset: const Offset(0, 8))
+                  ],
+                ),
+                child: QrImageView(
+                  data: booking.qrCode,
+                  version: QrVersions.auto,
+                  size: 200,
+                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: AppTheme.primaryBlue),
+                  dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: AppTheme.textPrimary),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Dịch vụ:', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                  Text(booking.serviceName, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Biển số:', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                  Text(booking.vehiclePlate, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('Đóng'),
+                ),
+              ),
+            ],
+          ),
+        ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.9, 0.9)),
       ),
     );
   }

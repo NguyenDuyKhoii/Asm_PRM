@@ -12,6 +12,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<TimeSlot> TimeSlots => Set<TimeSlot>();
+    public DbSet<Reward> Rewards => Set<Reward>();
+    public DbSet<Voucher> Vouchers => Set<Voucher>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +88,33 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<TimeSlot>(entity =>
         {
             entity.HasKey(e => e.Id);
+        });
+
+        // Reward configuration
+        modelBuilder.Entity<Reward>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Type).HasConversion<int>();
+            entity.Property(e => e.DiscountValue).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+        });
+
+        // Voucher configuration
+        modelBuilder.Entity<Voucher>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.Vouchers)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Reward)
+                  .WithMany(r => r.Vouchers)
+                  .HasForeignKey(e => e.RewardId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

@@ -21,6 +21,7 @@ builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IRewardRepository, RewardRepository>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "AutoWashProSuperSecretKeyThatIsLongEnough2024!";

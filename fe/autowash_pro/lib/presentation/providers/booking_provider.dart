@@ -119,9 +119,9 @@ class BookingProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> addVehicle(String licensePlate, int vehicleType) async {
+  Future<bool> addVehicle(String licensePlate, int vehicleType, {String? imageUrl}) async {
     try {
-      await _apiService.addVehicle(licensePlate, vehicleType);
+      await _apiService.addVehicle(licensePlate, vehicleType, imageUrl: imageUrl);
       await loadVehicles();
       return true;
     } catch (e) {
@@ -134,6 +134,18 @@ class BookingProvider with ChangeNotifier {
   void selectVehicle(VehicleModel vehicle) {
     _selectedVehicle = vehicle;
     notifyListeners();
+  }
+
+  Future<bool> deleteVehicle(String vehicleId) async {
+    try {
+      await _apiService.deleteVehicle(vehicleId);
+      await loadVehicles();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
   }
 
   // ==================== BOOKING SUMMARY ====================

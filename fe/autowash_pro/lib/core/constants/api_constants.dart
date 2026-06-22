@@ -21,4 +21,10 @@ class ApiConstants {
   
   // Vehicles
   static String get vehicles => '$baseUrl/vehicles';
+  
+  // Rewards & Loyalty
+  static String get rewards => '$baseUrl/rewards';
+  static String get loyaltyHome => '$baseUrl/rewards/loyalty';
+  static String get redeemReward => '$baseUrl/rewards/redeem';
+  static String get vouchers => '$baseUrl/rewards/vouchers';
 }

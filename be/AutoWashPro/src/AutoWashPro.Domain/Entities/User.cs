@@ -16,4 +16,5 @@ public class User
     // Navigation properties
     public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
 }
