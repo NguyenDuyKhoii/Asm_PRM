@@ -23,25 +23,25 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Xóa phương tiện', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: Text('Bạn có chắc chắn muốn xóa phương tiện ${vehicle.licensePlate} không?', style: GoogleFonts.outfit()),
+        title: Text('Delete Vehicle', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to delete vehicle ${vehicle.licensePlate}?', style: GoogleFonts.outfit()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Hủy', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
               final success = await provider.deleteVehicle(vehicle.id);
               if (success && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xóa xe thành công!'), backgroundColor: AppTheme.success));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vehicle deleted successfully!'), backgroundColor: AppTheme.success));
               } else if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Xóa thất bại!'), backgroundColor: AppTheme.error));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Delete failed!'), backgroundColor: AppTheme.error));
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-            child: Text('Xóa', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text('Delete', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -497,7 +497,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                                           IconButton(
                                             icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.error),
                                             onPressed: () => _confirmDelete(context, vehicle, provider),
-                                            tooltip: 'Xóa xe',
+                                            tooltip: 'Delete Vehicle',
                                           ),
                                         ],
                                       ),
@@ -571,7 +571,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                         ),
                         child: Row(
                           children: [
-                            Text('Xác nhận', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text('Confirm', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                             const SizedBox(width: 8),
                             const Icon(Icons.check_circle_rounded, size: 18, color: Colors.white),
                           ],

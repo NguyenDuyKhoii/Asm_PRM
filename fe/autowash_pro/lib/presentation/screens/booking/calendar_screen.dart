@@ -31,11 +31,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final serviceName = Provider.of<BookingProvider>(context).selectedService?.name ?? 'Dịch vụ';
+    final serviceName = Provider.of<BookingProvider>(context).selectedService?.name ?? 'Service';
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: Text('Đặt lịch - $serviceName', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+        title: Text('Book - $serviceName', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
@@ -59,9 +59,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Chọn ngày & giờ', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
+                        Text('Select Date & Time', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
                         const SizedBox(height: 4),
-                        Text('Lựa chọn thời gian phù hợp để chăm sóc xe của bạn.', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                        Text('Choose a suitable time to take care of your car.', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
                         const SizedBox(height: 24),
 
                         // Calendar Card
@@ -116,7 +116,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               },
                               headerTitleBuilder: (context, day) {
                                 return Text(
-                                  'Tháng ${day.month}, ${day.year}',
+                                  'Month ${day.month}, ${day.year}',
                                   style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy),
                                 );
                               },
@@ -137,7 +137,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         const SizedBox(height: 24),
 
                         // Selected Vehicle
-                        Text('CHỌN XE', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 1)),
+                        Text('SELECT VEHICLE', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 1)),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -168,14 +168,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     Text(
                                       provider.selectedVehicle?.name?.isNotEmpty == true 
                                           ? provider.selectedVehicle!.name! 
-                                          : (provider.selectedVehicle?.vehicleTypeName ?? 'Chưa chọn xe'),
+                                          : (provider.selectedVehicle?.vehicleTypeName ?? 'No vehicle selected'),
                                       style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       provider.selectedVehicle != null 
                                           ? 'ID: ${provider.selectedVehicle!.licensePlate}${provider.selectedVehicle!.color?.isNotEmpty == true ? ' • ${provider.selectedVehicle!.color}' : ''}' 
-                                          : 'Vui lòng chọn phương tiện',
+                                          : 'Please select a vehicle',
                                       style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary),
                                     ),
                                   ],
@@ -185,7 +185,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen(isSelectionMode: true)));
                                 },
-                                child: Text('Thay đổi', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                                child: Text('Change', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
                               ),
                             ],
                           ),
@@ -193,21 +193,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         const SizedBox(height: 24),
 
                         // Time Slots
-                        Text('CHỌN KHUNG GIỜ', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 1)),
+                        Text('SELECT TIME SLOT', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 1)),
                         const SizedBox(height: 12),
                         if (_selectedDay == null)
                           Center(
                             child: Padding(
                               padding: const EdgeInsets.all(20),
-                              child: Text('Vui lòng chọn ngày trước', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 14)),
+                              child: Text('Please select a date first', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 14)),
                             ),
                           )
                         else if (provider.isLoading)
                           const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: AppTheme.primaryBlue)))
                         else if (provider.error != null)
-                          Text('Lỗi: ${provider.error}', style: GoogleFonts.outfit(color: AppTheme.error))
+                          Text('Error: ${provider.error}', style: GoogleFonts.outfit(color: AppTheme.error))
                         else if (provider.availableSlots.isEmpty)
-                          Text('Không có khung giờ trống nào', style: GoogleFonts.outfit(color: AppTheme.textSecondary))
+                          Text('No available time slots', style: GoogleFonts.outfit(color: AppTheme.textSecondary))
                         else
                           GridView.builder(
                             shrinkWrap: true,
@@ -235,7 +235,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    '${slot.startTime} - ${slot.endTime}${!slot.isAvailable ? ' (Hết)' : ''}',
+                                    '${slot.startTime} - ${slot.endTime}${!slot.isAvailable ? ' (Full)' : ''}',
                                     style: GoogleFonts.outfit(
                                       fontSize: 14,
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -281,7 +281,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                       child: Text('PREMIUM SERVICE', style: GoogleFonts.outfit(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black)),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text('Đảm bảo độ bóng hoàn hảo', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                                    Text('Ensure perfect shine', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                                   ],
                                 ),
                               ),
@@ -329,7 +329,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('Tiếp tục', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text('Continue', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
                               const SizedBox(width: 8),
                               const Icon(Icons.arrow_forward, size: 20),
                             ],

@@ -154,7 +154,7 @@ class BookingProvider with ChangeNotifier {
   // ==================== BOOKING SUMMARY ====================
   Future<bool> loadBookingSummary() async {
     if (_selectedService == null || _selectedVehicle == null || _selectedDate == null || _selectedSlot == null) {
-      _error = 'Vui lòng chọn đầy đủ thông tin';
+      _error = 'Please provide complete information';
       notifyListeners();
       return false;
     }

@@ -37,11 +37,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'Đã xác nhận';
-      case 'pending': return 'Đang chờ';
-      case 'inprogress': return 'Đang rửa';
-      case 'completed': return 'Hoàn thành';
-      case 'cancelled': return 'Đã hủy';
+      case 'confirmed': return 'Confirmed';
+      case 'pending': return 'Pending';
+      case 'inprogress': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
       default: return status;
     }
   }
@@ -54,7 +54,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       if (i > 0 && (chars.length - i) % 3 == 0) buffer.write('.');
       buffer.write(chars[i]);
     }
-    return '${buffer}đ';
+    return '${buffer} VND';
   }
 
   @override
@@ -102,11 +102,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Lịch sử đặt lịch',
+                            'Booking History',
                             style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
                           ),
                           Text(
-                            'Quản lý các lượt đặt lịch của bạn',
+                            'Manage your bookings',
                             style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -134,11 +134,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _statItem(activeCount.toString(), 'Đang hoạt động', AppTheme.primaryBlue),
+                          _statItem(activeCount.toString(), 'Active', AppTheme.primaryBlue),
                           Container(width: 1, height: 30, color: Colors.grey.shade200),
-                          _statItem(completedCount.toString(), 'Đã hoàn thành', AppTheme.success),
+                          _statItem(completedCount.toString(), 'Completed', AppTheme.success),
                           Container(width: 1, height: 30, color: Colors.grey.shade200),
-                          _statItem(provider.myBookings.length.toString(), 'Tổng số đơn', AppTheme.textPrimary),
+                          _statItem(provider.myBookings.length.toString(), 'Total', AppTheme.textPrimary),
                         ],
                       ),
                     ).animate().fadeIn(duration: 400.ms, delay: 150.ms);
@@ -166,9 +166,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 child: Icon(Icons.calendar_today_rounded, size: 64, color: AppTheme.textMuted.withAlpha(100)),
                               ),
                               const SizedBox(height: 20),
-                              Text('Chưa có lịch đặt nào', style: GoogleFonts.outfit(fontSize: 18, color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+                              Text('No bookings yet', style: GoogleFonts.outfit(fontSize: 18, color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 6),
-                              Text('Các đơn đặt lịch của bạn sẽ xuất hiện ở đây', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textMuted)),
+                              Text('Your bookings will appear here', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textMuted)),
                             ],
                           ),
                         );
@@ -275,7 +275,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              'Tổng chi phí',
+                                              'Total Cost',
                                               style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
                                             ),
                                             Text(
@@ -323,12 +323,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'E-Ticket (Vé điện tử)',
+                'E-Ticket',
                 style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
               ),
               const SizedBox(height: 8),
               Text(
-                'Quét mã này tại trạm để check-in',
+                'Scan this code at the station to check-in',
                 style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 24),
@@ -354,7 +354,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Dịch vụ:', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                  Text('Service:', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
                   Text(booking.serviceName, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                 ],
               ),
@@ -362,7 +362,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Biển số:', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                  Text('License Plate:', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
                   Text(booking.vehiclePlate, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                 ],
               ),
@@ -376,7 +376,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text('Đóng'),
+                  child: const Text('Close'),
                 ),
               ),
             ],

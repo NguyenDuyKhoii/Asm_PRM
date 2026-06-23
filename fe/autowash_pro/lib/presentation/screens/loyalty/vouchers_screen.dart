@@ -28,7 +28,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Kho Voucher'),
+        title: const Text('My Vouchers'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
@@ -47,9 +47,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
                 children: [
                   Icon(Icons.card_giftcard_rounded, size: 64, color: AppTheme.textMuted.withAlpha(100)),
                   const SizedBox(height: 16),
-                  Text('Bạn chưa có voucher nào', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                  Text('You have no vouchers yet', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
                   const SizedBox(height: 8),
-                  Text('Đổi điểm ngay để nhận ưu đãi', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textMuted)),
+                  Text('Redeem points now to get offers', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textMuted)),
                 ],
               ),
             );
@@ -106,7 +106,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    voucher.isUsed ? 'Đã dùng' : (isExpired ? 'Hết hạn' : 'Sẵn sàng'),
+                                    voucher.isUsed ? 'Used' : (isExpired ? 'Expired' : 'Ready'),
                                     style: GoogleFonts.outfit(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -127,12 +127,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('Mã: ${voucher.code}', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1, color: isUsable ? AppTheme.textPrimary : AppTheme.textMuted)),
+                                  Text('Code: ${voucher.code}', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1, color: isUsable ? AppTheme.textPrimary : AppTheme.textMuted)),
                                   if (isUsable)
                                     GestureDetector(
                                       onTap: () {
                                         Clipboard.setData(ClipboardData(text: voucher.code));
-                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã sao chép mã!')));
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code copied!')));
                                       },
                                       child: const Icon(Icons.copy_rounded, size: 18, color: AppTheme.primaryBlue),
                                     ),
@@ -141,7 +141,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'HSD: ${DateFormat('dd/MM/yyyy HH:mm').format(voucher.expiryDate)}',
+                              'Expiry: ${DateFormat('dd/MM/yyyy HH:mm').format(voucher.expiryDate)}',
                               style: GoogleFonts.outfit(fontSize: 12, color: isExpired ? AppTheme.error : AppTheme.textSecondary),
                             ),
                           ],

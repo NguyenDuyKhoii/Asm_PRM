@@ -16,51 +16,51 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567801"),
-                    Name = "Rửa xe cơ bản",
-                    Description = "Rửa ngoài xe bằng nước áp lực cao, lau khô và xịt bóng lốp.",
+                    Name = "Basic Car Wash",
+                    Description = "Exterior high-pressure wash, hand dry, and tire shine.",
                     Price = 50000,
                     DurationMinutes = 30,
-                    ImageUrl = "basic_wash",
+                    ImageUrl = "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&q=80&w=800",
                     IsActive = true
                 },
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"),
-                    Name = "Rửa xe cao cấp",
-                    Description = "Rửa ngoài + vệ sinh nội thất cơ bản, hút bụi ghế và sàn xe.",
+                    Name = "Premium Car Wash",
+                    Description = "Exterior wash + basic interior cleaning, seat and floor vacuuming.",
                     Price = 100000,
                     DurationMinutes = 45,
-                    ImageUrl = "premium_wash",
+                    ImageUrl = "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&q=80&w=800",
                     IsActive = true
                 },
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"),
-                    Name = "Rửa xe & Hút bụi",
-                    Description = "Rửa ngoài toàn diện + hút bụi toàn bộ nội thất + vệ sinh taplo.",
+                    Name = "Wash & Vacuum",
+                    Description = "Comprehensive exterior wash + full interior vacuum + dashboard cleaning.",
                     Price = 150000,
                     DurationMinutes = 60,
-                    ImageUrl = "wash_vacuum",
+                    ImageUrl = "https://images.unsplash.com/photo-1600577916048-804c9191e36c?auto=format&fit=crop&q=80&w=800",
                     IsActive = true
                 },
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"),
-                    Name = "Chăm sóc toàn diện",
-                    Description = "Rửa xe + hút bụi + đánh bóng sơn + dưỡng nhựa đen + xịt thơm.",
+                    Name = "Comprehensive Care",
+                    Description = "Wash + vacuum + paint polish + plastic trim dressing + interior fragrance.",
                     Price = 300000,
                     DurationMinutes = 90,
-                    ImageUrl = "full_care",
+                    ImageUrl = "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=800",
                     IsActive = true
                 },
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567805"),
-                    Name = "Đánh bóng nội thất",
-                    Description = "Vệ sinh sâu nội thất, giặt ghế, làm sạch trần, dưỡng da ghế.",
+                    Name = "Interior Polishing",
+                    Description = "Deep interior cleaning, seat washing, ceiling cleaning, leather conditioning.",
                     Price = 500000,
                     DurationMinutes = 120,
-                    ImageUrl = "interior_polish",
+                    ImageUrl = "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800",
                     IsActive = true
                 }
             };
@@ -166,8 +166,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567801"),
-                    Name = "Giảm 20% lần rửa tiếp theo",
-                    Description = "Voucher giảm 20% cho 1 lần rửa xe bất kỳ. Áp dụng cho tất cả dịch vụ.",
+                    Name = "20% Off Next Wash",
+                    Description = "20% discount voucher for any car wash. Applies to all services.",
                     Type = RewardType.Discount,
                     PointsCost = 50,
                     DiscountValue = 20,
@@ -177,8 +177,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567802"),
-                    Name = "Giảm 50% lần rửa tiếp theo",
-                    Description = "Voucher giảm 50% cho 1 lần rửa xe. Áp dụng cho dịch vụ từ 100.000đ trở lên.",
+                    Name = "50% Off Next Wash",
+                    Description = "50% discount voucher for 1 car wash. Applies to services from 100,000đ.",
                     Type = RewardType.Discount,
                     PointsCost = 100,
                     DiscountValue = 50,
@@ -188,8 +188,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567803"),
-                    Name = "Rửa xe cơ bản miễn phí",
-                    Description = "Đổi điểm để nhận 1 lượt rửa xe cơ bản hoàn toàn miễn phí.",
+                    Name = "Free Basic Wash",
+                    Description = "Redeem points for 1 completely free basic car wash.",
                     Type = RewardType.FreeWash,
                     PointsCost = 150,
                     DiscountValue = 50000,
@@ -199,8 +199,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567804"),
-                    Name = "Rửa xe cao cấp miễn phí",
-                    Description = "Đổi điểm để nhận 1 lượt rửa xe cao cấp hoàn toàn miễn phí.",
+                    Name = "Free Premium Wash",
+                    Description = "Redeem points for 1 completely free premium car wash.",
                     Type = RewardType.FreeWash,
                     PointsCost = 300,
                     DiscountValue = 100000,
@@ -210,8 +210,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567805"),
-                    Name = "Xịt thơm nội thất",
-                    Description = "Dịch vụ xịt thơm nội thất cao cấp miễn phí kèm lần rửa xe tiếp theo.",
+                    Name = "Interior Fragrance",
+                    Description = "Free premium interior fragrance spray with your next car wash.",
                     Type = RewardType.AddOn,
                     PointsCost = 30,
                     DiscountValue = 30000,
@@ -221,8 +221,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567806"),
-                    Name = "Phủ nano sơn xe",
-                    Description = "Dịch vụ phủ nano bảo vệ sơn xe miễn phí (trị giá 200.000đ).",
+                    Name = "Nano Paint Coating",
+                    Description = "Free protective nano paint coating service (worth 200,000đ).",
                     Type = RewardType.AddOn,
                     PointsCost = 400,
                     DiscountValue = 200000,

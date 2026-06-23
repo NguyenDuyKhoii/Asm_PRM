@@ -19,7 +19,7 @@ class BookingSummaryScreen extends StatelessWidget {
       if (i > 0 && (chars.length - i) % 3 == 0) buffer.write('.');
       buffer.write(chars[i]);
     }
-    return '${buffer}đ';
+    return '${buffer} VND';
   }
   @override
   Widget build(BuildContext context) {
@@ -77,12 +77,12 @@ class BookingSummaryScreen extends StatelessWidget {
                         const SizedBox(height: 10),
                         // Titles
                         Text(
-                          'Xác nhận đặt lịch',
+                          'Confirm Booking',
                           style: GoogleFonts.outfit(fontSize: 26, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy),
                         ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
                         const SizedBox(height: 6),
                         Text(
-                          'Vui lòng kiểm tra lại thông tin chi tiết',
+                          'Please review the details',
                           style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
                         ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.1),
                         const SizedBox(height: 24),
@@ -119,7 +119,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('DỊCH VỤ', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.textSecondary, letterSpacing: 1)),
+                                        Text('SERVICE', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.textSecondary, letterSpacing: 1)),
                                         const SizedBox(height: 4),
                                         Text(summary.serviceName, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                                         const SizedBox(height: 12),
@@ -127,7 +127,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                           children: [
                                             const Icon(Icons.timer_outlined, size: 16, color: AppTheme.primaryBlue),
                                             const SizedBox(width: 6),
-                                            Text('${selectedService?.durationMinutes ?? 60} phút', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue)),
+                                            Text('${selectedService?.durationMinutes ?? 60} mins', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue)),
                                           ],
                                         ),
                                       ],
@@ -155,7 +155,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                   children: [
                                     const Icon(Icons.directions_car_rounded, color: AppTheme.pristineNavy, size: 22),
                                     const SizedBox(height: 12),
-                                    Text('Phương tiện', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                                    Text('Vehicle', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                                     const SizedBox(height: 4),
                                     Text('${summary.vehiclePlate} (${summary.vehicleTypeName})', style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                                   ],
@@ -175,7 +175,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                   children: [
                                     const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22),
                                     const SizedBox(height: 12),
-                                    Text('Hạng thành viên', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                                    Text('Membership Tier', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                                     const SizedBox(height: 4),
                                     Text(summary.tierName, style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                                   ],
@@ -186,7 +186,7 @@ class BookingSummaryScreen extends StatelessWidget {
                         ).animate().fadeIn(duration: 400.ms, delay: 200.ms).slideY(begin: 0.1),
                         const SizedBox(height: 16),
 
-                        // Lịch hẹn Card
+                        // Appointment Card
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(20),
@@ -207,7 +207,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                     child: const Icon(Icons.calendar_month_rounded, color: AppTheme.primaryBlue, size: 20),
                                   ),
                                   const SizedBox(width: 12),
-                                  Text('Lịch hẹn', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
+                                  Text('Appointment', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                                   const Spacer(),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -215,7 +215,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                       color: AppTheme.primaryBlue.withAlpha(20),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
-                                    child: Text('Đang chờ', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primaryBlue)),
+                                    child: Text('Pending', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primaryBlue)),
                                   ),
                                 ],
                               ),
@@ -226,7 +226,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('Ngày', style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                                        Text('Date', style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                                         const SizedBox(height: 6),
                                         Text(DateFormat('dd / MM / yyyy').format(summary.bookingDate), style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                                       ],
@@ -236,7 +236,7 @@ class BookingSummaryScreen extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('Giờ', style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                                        Text('Time', style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                                         const SizedBox(height: 6),
                                         Text(summary.timeSlotDisplay, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                                       ],
@@ -253,7 +253,7 @@ class BookingSummaryScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Giá niêm yết', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                            Text('Original Price', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                             Text(
                               _formatCurrency(summary.originalPrice),
                               style: GoogleFonts.outfit(
@@ -268,7 +268,7 @@ class BookingSummaryScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Ưu đãi thành viên (${summary.tierName})', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                              Text('Member Discount (${summary.tierName})', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                               Text(
                                 '- ${_formatCurrency(summary.discountAmount)}',
                                 style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.primaryBlue, fontWeight: FontWeight.w800),
@@ -284,7 +284,7 @@ class BookingSummaryScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Tổng thanh\ntoán',
+                              'Total\nPayment',
                               style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: AppTheme.pristineNavy, height: 1.1),
                             ),
                             Text(
@@ -316,9 +316,9 @@ class BookingSummaryScreen extends StatelessWidget {
                                   text: TextSpan(
                                     style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w500, height: 1.5),
                                     children: [
-                                      const TextSpan(text: 'Thanh toán tại trạm. Vui lòng xuất trình mã '),
+                                      const TextSpan(text: 'Pay at the station. Please present the '),
                                       TextSpan(text: 'QR', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
-                                      const TextSpan(text: ' khi đến trạm để bắt đầu dịch vụ.'),
+                                      const TextSpan(text: ' code when you arrive to start the service.'),
                                     ],
                                   ),
                                 ),
@@ -362,7 +362,7 @@ class BookingSummaryScreen extends StatelessWidget {
                               children: [
                                 const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
                                 const SizedBox(width: 8),
-                                Text('Xác nhận đặt lịch', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+                                Text('Confirm Booking', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
                               ],
                             ),
                     ),

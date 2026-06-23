@@ -19,7 +19,7 @@ class BookingSuccessScreen extends StatelessWidget {
       if (i > 0 && (chars.length - i) % 3 == 0) buffer.write('.');
       buffer.write(chars[i]);
     }
-    return '${buffer}đ';
+    return '${buffer} VND';
   }
 
   @override
@@ -81,14 +81,14 @@ class BookingSuccessScreen extends StatelessWidget {
                             const SizedBox(height: 18),
                             
                             Text(
-                              'Đặt lịch thành công!',
+                              'Booking Successful!',
                               style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
                             ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
                             
                             const SizedBox(height: 6),
                             
                             Text(
-                              'Lịch đặt của bạn đã được xác nhận.',
+                              'Your booking has been confirmed.',
                               style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
                             ).animate().fadeIn(duration: 400.ms, delay: 250.ms),
 
@@ -131,7 +131,7 @@ class BookingSuccessScreen extends StatelessWidget {
                                   const SizedBox(height: 14),
                                   
                                   Text(
-                                    'MÃ CHECK-IN',
+                                    'CHECK-IN CODE',
                                     style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w900, color: AppTheme.textMuted, letterSpacing: 1.5),
                                   ),
                                   
@@ -139,13 +139,13 @@ class BookingSuccessScreen extends StatelessWidget {
                                   _divider(),
 
                                   // Details rows
-                                  _successDetailRow(Icons.local_car_wash_rounded, 'Dịch vụ', confirm.serviceName),
+                                  _successDetailRow(Icons.local_car_wash_rounded, 'Service', confirm.serviceName),
                                   _divider(),
-                                  _successDetailRow(Icons.directions_car_filled_rounded, 'Biển số xe', confirm.vehiclePlate),
+                                  _successDetailRow(Icons.directions_car_filled_rounded, 'License Plate', confirm.vehiclePlate),
                                   _divider(),
-                                  _successDetailRow(Icons.calendar_month_rounded, 'Ngày', '${confirm.bookingDate.day}/${confirm.bookingDate.month}/${confirm.bookingDate.year}'),
+                                  _successDetailRow(Icons.calendar_month_rounded, 'Date', '${confirm.bookingDate.day}/${confirm.bookingDate.month}/${confirm.bookingDate.year}'),
                                   _divider(),
-                                  _successDetailRow(Icons.access_time_filled_rounded, 'Thời gian', confirm.timeSlotDisplay),
+                                  _successDetailRow(Icons.access_time_filled_rounded, 'Time', confirm.timeSlotDisplay),
                                   _divider(),
 
                                   const SizedBox(height: 16),
@@ -155,7 +155,7 @@ class BookingSuccessScreen extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Tổng thanh toán',
+                                        'Total Payment',
                                         style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w700),
                                       ),
                                       Text(
@@ -191,7 +191,7 @@ class BookingSuccessScreen extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                           ),
                           child: Text(
-                            'Về trang chủ',
+                            'Back to Home',
                             style: GoogleFonts.outfit(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,

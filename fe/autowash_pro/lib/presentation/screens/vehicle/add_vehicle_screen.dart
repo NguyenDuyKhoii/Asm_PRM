@@ -47,7 +47,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   }
 
   Future<String?> _uploadToCloudinary(XFile imageFile) async {
-    // Tạm thời thay bằng cloud name của bạn nếu cần
+    // Replace with your Cloudinary credentials if needed
     const String cloudName = 'dpcjk1tab'; 
     const String apiKey = '263482225152376';
     const String apiSecret = '8za2qN0Xehd_2cen7tWq0bgCTXE';
@@ -91,7 +91,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         if (uploadedUrl == null && mounted) {
           setState(() => _isUploading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Lỗi tải ảnh lên Cloudinary! Vui lòng thử lại.'), backgroundColor: AppTheme.error),
+            const SnackBar(content: Text('Error uploading image to Cloudinary! Please try again.'), backgroundColor: AppTheme.error),
           );
           return;
         }
@@ -112,7 +112,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Thêm xe thành công!'),
+              content: Text('Vehicle added successfully!'),
               backgroundColor: AppTheme.success,
               behavior: SnackBarBehavior.floating,
             ),
@@ -121,7 +121,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(provider.error ?? 'Có lỗi xảy ra'),
+              content: Text(provider.error ?? 'An error occurred'),
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -177,7 +177,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        'Thêm phương tiện',
+                        'Add Vehicle',
                         style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.textPrimary, letterSpacing: -0.5),
                       ),
                     ],
@@ -194,7 +194,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Loại phương tiện',
+                            'Vehicle Type',
                             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
                           ).animate().fadeIn(duration: 400.ms).slideX(begin: 0.05),
                           const SizedBox(height: 16),
@@ -203,7 +203,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                             children: [
                               Expanded(
                                 child: _VehicleTypeCard(
-                                  title: 'Ô tô',
+                                  title: 'Car',
                                   icon: Icons.directions_car_rounded,
                                   isSelected: _selectedType == 0,
                                   onTap: () => setState(() => _selectedType = 0),
@@ -212,7 +212,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: _VehicleTypeCard(
-                                  title: 'Xe máy',
+                                  title: 'Motorcycle',
                                   icon: Icons.two_wheeler_rounded,
                                   isSelected: _selectedType == 1,
                                   onTap: () => setState(() => _selectedType = 1),
@@ -224,7 +224,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           const SizedBox(height: 36),
                           
                           Text(
-                            'Ảnh phương tiện',
+                            'Vehicle Image',
                             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
                           ).animate().fadeIn(duration: 400.ms, delay: 150.ms).slideX(begin: 0.05),
                           const SizedBox(height: 16),
@@ -256,7 +256,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                           child: const Icon(Icons.add_a_photo_rounded, color: AppTheme.primaryBlue, size: 32),
                                         ),
                                         const SizedBox(height: 12),
-                                        Text('Nhấn để tải ảnh lên', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                                        Text('Tap to upload image', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                                       ],
                                     ),
                             ),
@@ -265,7 +265,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           const SizedBox(height: 36),
 
                           Text(
-                            'Biển số xe',
+                            'License Plate',
                             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
                           ).animate().fadeIn(duration: 400.ms, delay: 200.ms).slideX(begin: 0.05),
                           const SizedBox(height: 16),
@@ -313,7 +313,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                     ),
                                     validator: (value) {
                                       if (value == null || value.trim().isEmpty) {
-                                        return 'Vui lòng nhập biển số xe';
+                                        return 'Please enter the license plate';
                                       }
                                       return null;
                                     },
@@ -326,7 +326,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           const SizedBox(height: 24),
 
                           Text(
-                            'Tên phương tiện (tùy chọn)',
+                            'Vehicle Name (optional)',
                             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
                           ).animate().fadeIn(duration: 400.ms, delay: 350.ms).slideX(begin: 0.05),
                           const SizedBox(height: 12),
@@ -334,7 +334,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                             controller: _nameController,
                             style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                             decoration: InputDecoration(
-                              hintText: 'VD: Sedan Luxury',
+                              hintText: 'e.g. Sedan Luxury',
                               hintStyle: GoogleFonts.outfit(color: Colors.grey.shade400),
                               filled: true,
                               fillColor: Colors.white,
@@ -348,7 +348,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           const SizedBox(height: 24),
 
                           Text(
-                            'Màu sắc (tùy chọn)',
+                            'Color (optional)',
                             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
                           ).animate().fadeIn(duration: 400.ms, delay: 450.ms).slideX(begin: 0.05),
                           const SizedBox(height: 12),
@@ -356,7 +356,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                             controller: _colorController,
                             style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                             decoration: InputDecoration(
-                              hintText: 'VD: Trắng ngọc trai',
+                              hintText: 'e.g. Pearl White',
                               hintStyle: GoogleFonts.outfit(color: Colors.grey.shade400),
                               filled: true,
                               fillColor: Colors.white,
@@ -396,7 +396,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           ),
           child: _isUploading 
               ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : Text('Xác nhận & Lưu', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              : Text('Confirm & Save', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
         ),
       ),
     );

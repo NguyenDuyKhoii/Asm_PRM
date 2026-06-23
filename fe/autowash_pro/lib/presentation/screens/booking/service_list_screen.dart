@@ -16,7 +16,16 @@ class ServiceListScreen extends StatefulWidget {
 }
 
 class _ServiceListScreenState extends State<ServiceListScreen> {
-  String _selectedCategory = 'Tất cả';
+  String _selectedCategory = 'All';
+
+  // Fallback asset images per service index
+  static const List<String> _serviceAssets = [
+    'assets/images/svc_basic.png',
+    'assets/images/svc_premium.png',
+    'assets/images/svc_vacuum.png',
+    'assets/images/svc_care.png',
+    'assets/images/svc_interior.png',
+  ];
 
   @override
   void initState() {
@@ -100,7 +109,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Dịch vụ của chúng tôi',
+                            'Our Services',
                             style: GoogleFonts.outfit(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
@@ -109,7 +118,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                             ),
                           ),
                           Text(
-                            'Chăm sóc xế yêu của bạn một cách tốt nhất',
+                            'Taking care of your car in the best way',
                             style: GoogleFonts.outfit(
                               fontSize: 13,
                               color: AppTheme.textSecondary,
@@ -132,10 +141,10 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       physics: const BouncingScrollPhysics(),
                       children: [
-                        _categoryChip('Tất cả', Icons.grid_view_rounded),
-                        _categoryChip('Rửa xe', Icons.local_car_wash_rounded),
-                        _categoryChip('Chăm sóc', Icons.auto_awesome_rounded),
-                        _categoryChip('Đánh bóng', Icons.cleaning_services_rounded),
+                        _categoryChip('All', Icons.grid_view_rounded),
+                        _categoryChip('Car Wash', Icons.local_car_wash_rounded),
+                        _categoryChip('Care', Icons.auto_awesome_rounded),
+                        _categoryChip('Polishing', Icons.cleaning_services_rounded),
                       ],
                     ),
                   ),
@@ -153,15 +162,15 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
 
                       // Apply category filter
                       final filteredServices = provider.services.where((s) {
-                        if (_selectedCategory == 'Tất cả') return true;
-                        if (_selectedCategory == 'Rửa xe') {
-                          return s.name.contains('Rửa xe');
+                        if (_selectedCategory == 'All') return true;
+                        if (_selectedCategory == 'Car Wash') {
+                          return s.name.toLowerCase().contains('wash');
                         }
-                        if (_selectedCategory == 'Chăm sóc') {
-                          return s.name.contains('Chăm sóc') || s.name.contains('Hút bụi');
+                        if (_selectedCategory == 'Care') {
+                          return s.name.toLowerCase().contains('care') || s.name.toLowerCase().contains('vacuum');
                         }
-                        if (_selectedCategory == 'Đánh bóng') {
-                          return s.name.contains('Đánh bóng');
+                        if (_selectedCategory == 'Polishing') {
+                          return s.name.toLowerCase().contains('polish');
                         }
                         return true;
                       }).toList();
@@ -174,7 +183,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                               Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textMuted.withAlpha(100)),
                               const SizedBox(height: 16),
                               Text(
-                                'Không tìm thấy dịch vụ phù hợp',
+                                'No suitable services found',
                                 style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -189,13 +198,15 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                         itemBuilder: (context, index) {
                           final service = filteredServices[index];
                           final accentColor = _getServiceColor(index);
-                          final isPopular = service.name.contains('cao cấp') || service.name.contains('toàn diện');
+                          final isPopular = service.name.toLowerCase().contains('premium') || service.name.toLowerCase().contains('comprehensive');
+                          final assetImage = _serviceAssets[index % _serviceAssets.length];
 
                           return _ServiceListItem(
                             service: service,
                             icon: _getServiceIcon(index),
                             accentColor: accentColor,
                             isPopular: isPopular,
+                            assetImage: assetImage,
                             onTap: () {
                               provider.selectService(service);
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen(isSelectionMode: true, isFromServiceList: true)));
@@ -267,6 +278,7 @@ class _ServiceListItem extends StatelessWidget {
   final IconData icon;
   final Color accentColor;
   final bool isPopular;
+  final String assetImage;
   final VoidCallback onTap;
 
   const _ServiceListItem({
@@ -274,6 +286,7 @@ class _ServiceListItem extends StatelessWidget {
     required this.icon,
     required this.accentColor,
     required this.isPopular,
+    required this.assetImage,
     required this.onTap,
   });
 
@@ -304,143 +317,166 @@ class _ServiceListItem extends StatelessWidget {
               ),
           ],
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Decorative background glowing aura
-            Positioned(
-              top: -30,
-              right: -30,
-              child: Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: accentColor.withAlpha(15),
-                  shape: BoxShape.circle,
-                ),
+            // ── Service Image ──
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              child: SizedBox(
+                height: 140,
+                width: double.infinity,
+                child: Image.asset(
+                        assetImage,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => Container(
+                          color: accentColor.withAlpha(20),
+                          child: Center(child: Icon(icon, size: 48, color: accentColor.withAlpha(80))),
+                        ),
+                      ),
               ),
             ),
-            
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Icon container with dynamic visual glow
-                  Container(
-                    width: 58,
-                    height: 58,
+
+            // ── Content ──
+            Stack(
+              children: [
+                // Decorative background glowing aura
+                Positioned(
+                  top: -30,
+                  right: -30,
+                  child: Container(
+                    width: 90,
+                    height: 90,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: accentColor.withAlpha(30), width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: accentColor.withAlpha(20),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(icon, color: accentColor, size: 28),
+                      color: accentColor.withAlpha(15),
+                      shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  
-                  // Text Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                service.name,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppTheme.textPrimary,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
+                ),
+                
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Icon container
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: accentColor.withAlpha(30), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accentColor.withAlpha(20),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
-                            if (isPopular)
-                              Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: accentColor.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: accentColor.withAlpha(50), width: 1),
-                                ),
-                                child: Text(
-                                  'BÁN CHẠY',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: accentColor,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          service.description,
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            color: AppTheme.textSecondary,
-                            height: 1.4,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        child: Center(
+                          child: Icon(icon, color: accentColor, size: 24),
                         ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      ),
+                      const SizedBox(width: 14),
+                      
+                      // Text Content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Duration Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.grey.shade200, width: 1),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.access_time_filled_rounded, size: 13, color: Colors.grey.shade600),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    service.formattedDuration,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    service.name,
                                     style: GoogleFonts.outfit(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.grey.shade700,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textPrimary,
+                                      letterSpacing: -0.2,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                if (isPopular)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: accentColor.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: accentColor.withAlpha(50), width: 1),
+                                    ),
+                                    child: Text(
+                                      'BEST SELLER',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                        color: accentColor,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                            
-                            // Pricing Badge
+                            const SizedBox(height: 6),
                             Text(
-                              service.formattedPrice,
+                              service.description,
                               style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: AppTheme.primaryBlue,
+                                fontSize: 13,
+                                color: AppTheme.textSecondary,
+                                height: 1.4,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Duration Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.grey.shade200, width: 1),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.access_time_filled_rounded, size: 13, color: Colors.grey.shade600),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        service.formattedDuration,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                
+                                // Pricing Badge
+                                Text(
+                                  service.formattedPrice,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppTheme.primaryBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),

@@ -5,11 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
-import 'package:autowash_pro/presentation/screens/auth/login_screen.dart';
 import 'package:autowash_pro/presentation/screens/booking/service_list_screen.dart';
+import 'package:autowash_pro/presentation/screens/booking/calendar_screen.dart';
 import 'package:autowash_pro/presentation/screens/booking/my_bookings_screen.dart';
 import 'package:autowash_pro/presentation/screens/vehicle/my_vehicles_screen.dart';
 import 'package:autowash_pro/presentation/screens/loyalty/loyalty_home_screen.dart';
+import 'package:autowash_pro/presentation/screens/auth/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+
+  // Fallback asset images for service cards
+  static const List<String> _serviceAssets = [
+    'assets/images/service_carwash.jpg',
+    'assets/images/service_interior.jpg',
+    'assets/images/service_inspection.jpg',
+  ];
 
   @override
   void initState() {
@@ -43,13 +51,105 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // ── Tier-based color scheme ──
+  _TierColors _getTierColors(String tierName) {
+    final t = tierName.toLowerCase();
+    if (t.contains('platinum') || t.contains('diamond')) {
+      return _TierColors(
+        cardBg: const Color(0xFFE8EFF5),
+        pillBg: const Color(0xFFB0C4DE),
+        pillText: const Color(0xFF2C3E6B),
+        accent: const Color(0xFF5B7FA5),
+        progressBar: const Color(0xFF5B7FA5),
+      );
+    } else if (t.contains('gold')) {
+      return _TierColors(
+        cardBg: const Color(0xFFF5E6B8),
+        pillBg: const Color(0xFFE6B800),
+        pillText: const Color(0xFF5C3D00),
+        accent: const Color(0xFFB8860B),
+        progressBar: const Color(0xFFB8860B),
+      );
+    } else if (t.contains('silver')) {
+      return _TierColors(
+        cardBg: const Color(0xFFF1F2F4),
+        pillBg: const Color(0xFFD6D9DF),
+        pillText: const Color(0xFF4B5563),
+        accent: const Color(0xFF8993A4),
+        progressBar: const Color(0xFF8993A4),
+      );
+    } else {
+      // Bronze / Member / default
+      return _TierColors(
+        cardBg: const Color(0xFFF5EFE6),
+        pillBg: const Color(0xFFE2D5C3),
+        pillText: const Color(0xFF6B5B47),
+        accent: const Color(0xFFA8906E),
+        progressBar: const Color(0xFFA8906E),
+      );
+    }
+  }
+
+  // ── Dynamic Progress Calculation ──
+  Map<String, dynamic> _getTierProgress(int points, String actualTier) {
+    int nextThreshold = 100;
+    int currentBase = 0;
+    String nextTierName = 'Silver';
+    String membershipTitle = 'Standard\nMembership';
+    
+    final t = actualTier.toLowerCase();
+    if (t.contains('platinum') || t.contains('diamond')) {
+      nextThreshold = points > 0 ? points : 1; 
+      currentBase = 1000;
+      nextTierName = 'Max Tier';
+      membershipTitle = 'Elite\nMembership';
+    } else if (t.contains('gold')) {
+      nextThreshold = 1000;
+      currentBase = 300;
+      nextTierName = 'Platinum';
+      membershipTitle = 'Premium\nMembership';
+    } else if (t.contains('silver')) {
+      nextThreshold = 300;
+      currentBase = 100;
+      nextTierName = 'Gold';
+      membershipTitle = 'Plus\nMembership';
+    } else {
+      nextThreshold = 100;
+      currentBase = 0;
+      nextTierName = 'Silver';
+      membershipTitle = 'Standard\nMembership';
+    }
+
+    double progress = 1.0;
+    if (nextThreshold > currentBase) {
+      progress = (points - currentBase) / (nextThreshold - currentBase);
+    }
+    if (progress > 1.0) progress = 1.0;
+    if (progress < 0.0) progress = 0.0;
+    
+    int percent = (progress * 100).toInt();
+    if (t.contains('platinum') || t.contains('diamond')) {
+      return {
+        'progress': 1.0,
+        'text': 'Max Tier Reached',
+        'title': membershipTitle,
+      };
+    }
+    
+    return {
+      'progress': progress,
+      'text': '$percent% to $nextTierName',
+      'title': membershipTitle,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final booking = Provider.of<BookingProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -58,391 +158,596 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              
-              // 1. Header (Avatar, Welcome, Bell)
+
+              // ═══════════════ 1. HEADER ═══════════════
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: AppTheme.accentLightBlue,
-                        child: Text(
-                          auth.user?.fullName.substring(0, 1).toUpperCase() ?? 'P',
-                          style: GoogleFonts.outfit(color: AppTheme.pristineNavy, fontWeight: FontWeight.bold),
+                      // Avatar
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.accentLightBlue,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 3)),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            auth.user?.fullName.substring(0, 1).toUpperCase() ?? 'K',
+                            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Welcome back,', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
                           Text(
-                            auth.user?.fullName ?? 'Pristine Care',
-                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy),
+                            'WELCOME BACK',
+                            style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w700, color: AppTheme.textMuted, letterSpacing: 1.5),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            auth.user?.fullName ?? 'Khoi',
+                            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.pristineNavy),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none_rounded, color: AppTheme.pristineNavy),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // 2. Member Status Card (Pristine Style)
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.pristineDark, AppTheme.primaryBlue],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(color: AppTheme.primaryBlue.withAlpha(40), blurRadius: 15, offset: const Offset(0, 8))
-                  ],
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
-                              child: const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'MEMBER STATUS',
-                              style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
-                            ),
+                  Row(
+                    children: [
+                      // Logout Button
+                      GestureDetector(
+                        onTap: () async {
+                          await auth.logout();
+                          if (context.mounted) {
+                            Navigator.pushAndRemoveUntil(
+                              context, 
+                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              (route) => false,
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 10, offset: const Offset(0, 3)),
+                            ],
+                          ),
+                          child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Notifications
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 10, offset: const Offset(0, 3)),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(40),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'LEVEL 4',
-                            style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Pristine Gold',
-                      style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          '${booking.userTier?.loyaltyPoints ?? 7500}',
-                          style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, height: 1),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'points',
-                          style: GoogleFonts.outfit(fontSize: 14, color: Colors.white.withAlpha(200)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '2,500 points until Platinum',
-                      style: GoogleFonts.outfit(fontSize: 12, color: Colors.white.withAlpha(180)),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(30),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: 0.75, // 75%
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(colors: [Color(0xFF89F7FE), Color(0xFF66A6FF)]),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const LoyaltyHomeScreen()));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppTheme.primaryBlue,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            minimumSize: const Size(0, 36),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          ),
-                          child: Text('Redeem', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                        child: const Icon(Icons.notifications_none_rounded, color: AppTheme.pristineNavy, size: 22),
+                      ),
+                    ],
+                  ),
+                ],
+              ).animate().fadeIn(duration: 400.ms),
+
               const SizedBox(height: 24),
 
-              // 3. Action Grid (2x2)
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.4,
+              // ═══════════════ 2. MEMBERSHIP CARD ═══════════════
+              _buildMembershipCard(booking, auth).animate().fadeIn(duration: 500.ms, delay: 100.ms).slideY(begin: 0.08),
+
+              const SizedBox(height: 28),
+
+              // ═══════════════ 3. QUICK ACTIONS (4 circles) ═══════════════
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _actionCard(Icons.calendar_month_outlined, 'Book Now', () {
+                  _actionCircle(Icons.calendar_month_outlined, 'Book Now', () {
                     booking.resetBookingFlow();
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
                   }),
-                  _actionCard(Icons.history_rounded, 'History', () {
+                  _actionCircle(Icons.history_rounded, 'History', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyBookingsScreen()));
                   }),
-                  _actionCard(Icons.directions_car_outlined, 'My Garage', () {
+                  _actionCircle(Icons.directions_car_outlined, 'My Garage', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen()));
                   }),
-                  _actionCard(Icons.card_giftcard_rounded, 'Offers', () {
+                  _actionCircle(Icons.local_offer_outlined, 'Offers', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const LoyaltyHomeScreen()));
                   }),
                 ],
-              ),
-              const SizedBox(height: 32),
+              ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
 
-              // 4. Popular Services
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('Popular Services', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
-                  Text('View All', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              if (booking.services.isNotEmpty)
-                ...booking.services.take(3).map((service) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 4))
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentLightBlue,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(Icons.water_drop_outlined, color: AppTheme.pristineNavy),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(service.name, style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(Icons.access_time, size: 12, color: AppTheme.textSecondary),
-                                  const SizedBox(width: 4),
-                                  Text('30 mins', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
-                                ],
-                              ),
-                            ],
+              const SizedBox(height: 28),
+
+              // ═══════════════ 4. SUMMER COLLECTION BANNER ═══════════════
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withAlpha(18), blurRadius: 20, offset: const Offset(0, 8)),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        'assets/images/banner_summer.jpg',
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => Container(
+                          color: AppTheme.pristineNavy,
+                          child: Image.asset('assets/images/background.png', fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => const SizedBox(),
                           ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                      ),
+                      // Dark gradient overlay
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.black.withAlpha(190), Colors.black.withAlpha(40)],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                          ),
+                        ),
+                      ),
+                      // Content
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              '${service.price.toStringAsFixed(0)}đ',
-                              style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                              'SEASONAL SELECTION',
+                              style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white.withAlpha(180), letterSpacing: 2),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Summer Collection',
+                              style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
+                            ),
+                            const SizedBox(height: 14),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(color: AppTheme.accentLightBlue, borderRadius: BorderRadius.circular(10)),
-                              child: Text('+50 pts', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'EXPLORE MORE',
+                                style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy, letterSpacing: 0.5),
+                              ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  );
+                      ),
+                    ],
+                  ),
+                ),
+              ).animate().fadeIn(duration: 600.ms, delay: 300.ms).slideY(begin: 0.08),
+
+              const SizedBox(height: 32),
+
+              // ═══════════════ 5. POPULAR SERVICES ═══════════════
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Popular Services', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
+                  GestureDetector(
+                    onTap: () {
+                      booking.resetBookingFlow();
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
+                    },
+                    child: Text('View All', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue)),
+                  ),
+                ],
+              ).animate().fadeIn(duration: 500.ms, delay: 400.ms),
+
+              const SizedBox(height: 16),
+
+              // Service cards
+              if (booking.services.isNotEmpty)
+                ...booking.services.take(3).toList().asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final service = entry.value;
+                  final assetImage = _serviceAssets[idx % _serviceAssets.length];
+
+                  return _buildServiceCard(service, assetImage, booking, idx)
+                      .animate()
+                      .fadeIn(duration: 500.ms, delay: Duration(milliseconds: 450 + idx * 120))
+                      .slideY(begin: 0.06);
                 }),
-                
-              const SizedBox(height: 24),
-              
-              // 5. Summer Offer Banner
-              Container(
-                width: double.infinity,
-                height: 140,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: AppTheme.pristineNavy,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Image.asset(
-                        'assets/images/background.png',
-                        fit: BoxFit.cover,
-                        color: Colors.black.withAlpha(100),
-                        colorBlendMode: BlendMode.darken,
-                        errorBuilder: (context, error, stackTrace) => Container(),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('SUMMER OFFER', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber, letterSpacing: 1)),
-                          const SizedBox(height: 8),
-                          Text('20% Off\nInterior Packages', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2)),
-                          const SizedBox(height: 8),
-                          Text('Keep your car fresh and cool this season.', style: GoogleFonts.outfit(fontSize: 11, color: Colors.white.withAlpha(200))),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 80), // Space for bottom nav
+
+              const SizedBox(height: 90), // Space for bottom nav
             ],
           ),
         ),
       ),
-      // Custom Bottom Navigation
+
+      // ═══════════════ BOTTOM NAVIGATION ═══════════════
       extendBody: true,
       bottomNavigationBar: Container(
-        height: 70,
+        height: 72,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 20, offset: const Offset(0, -5))
+            BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 20, offset: const Offset(0, -4)),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _navItem(0, Icons.home_rounded, 'Home'),
-            _navItem(1, Icons.directions_car_rounded, 'Cars'),
-            const SizedBox(width: 48), // Space for FAB
-            _navItem(2, Icons.history_rounded, 'History'),
-            _navItem(3, Icons.stars_rounded, 'Rewards'),
+            _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
+            _navItem(1, Icons.directions_car_outlined, Icons.directions_car_rounded, 'Cars'),
+            const SizedBox(width: 16),
+            _navItem(2, Icons.history_outlined, Icons.history_rounded, 'History'),
+            _navItem(3, Icons.stars_outlined, Icons.stars_rounded, 'Rewards'),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
-        margin: const EdgeInsets.only(top: 20),
-        height: 60,
-        width: 60,
-        decoration: BoxDecoration(
-          color: AppTheme.pristineDark,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(color: AppTheme.pristineDark.withAlpha(80), blurRadius: 15, offset: const Offset(0, 5))
-          ],
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        margin: const EdgeInsets.only(top: 16),
+        height: 56,
+        width: 56,
+        child: FloatingActionButton(
           onPressed: () {
             booking.resetBookingFlow();
             Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
           },
+          backgroundColor: AppTheme.primaryBlue,
+          elevation: 6,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
         ),
       ),
     );
   }
 
-  Widget _actionCard(IconData icon, String title, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 4))
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.accentLightBlue,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: AppTheme.primaryBlue, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // ─────────────────────────────────────────────
+  //  MEMBERSHIP CARD — color adapts to tier
+  // ─────────────────────────────────────────────
+  Widget _buildMembershipCard(BookingProvider booking, AuthProvider auth) {
+    final points = auth.user?.loyaltyPoints ?? booking.userTier?.loyaltyPoints ?? 0;
+    
+    // Resolve actual tier dynamically from points
+    String actualTier = 'Member';
+    if (points >= 1000) {
+      actualTier = 'Platinum';
+    } else if (points >= 300) {
+      actualTier = 'Gold';
+    } else if (points >= 100) {
+      actualTier = 'Silver';
+    }
 
-  Widget _navItem(int index, IconData icon, String label) {
-    final isSelected = _currentIndex == index;
-    final color = isSelected ? AppTheme.primaryBlue : AppTheme.textMuted;
-    return GestureDetector(
-      onTap: () => _onNavTapped(index),
-      behavior: HitTestBehavior.opaque,
+    final colors = _getTierColors(actualTier);
+    final progressData = _getTierProgress(points, actualTier);
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: colors.cardBg,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: colors.cardBg.withAlpha(120), blurRadius: 16, offset: const Offset(0, 6)),
+        ],
+      ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.outfit(fontSize: 10, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: color)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left side
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tier pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: colors.pillBg,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        'PRISTINE ${actualTier.toUpperCase()}',
+                        style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: colors.pillText, letterSpacing: 0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      progressData['title'],
+                      style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy, height: 1.25),
+                    ),
+                  ],
+                ),
+              ),
+              // Right side — points
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$points',
+                    style: GoogleFonts.outfit(fontSize: 30, fontWeight: FontWeight.w900, color: colors.accent, height: 1),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'AVAILABLE\nPOINTS',
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: AppTheme.textSecondary, letterSpacing: 0.6, height: 1.3),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 22),
+
+          // Progress bar + label
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(12),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progressData['progress'],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colors.progressBar,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Text(
+                progressData['text'],
+                style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.pristineNavy),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
+
+  // ─────────────────────────────────────────────
+  //  SERVICE CARD
+  // ─────────────────────────────────────────────
+  Widget _buildServiceCard(dynamic service, String assetImage, BookingProvider booking, int index) {
+    // Points earned per service (example mapping)
+    final ptsLabels = ['+650 pts', '+1,200 pts', '+900 pts'];
+    final ptsLabel = ptsLabels[index % ptsLabels.length];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 20, offset: const Offset(0, 6)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Image ──
+          SizedBox(
+            height: 180,
+            width: double.infinity,
+            child: Image.asset(
+                    assetImage,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => Container(color: Colors.grey[200]),
+                  ),
+          ),
+
+          // ── Content ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name + Price row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        service.name,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          fontStyle: FontStyle.italic,
+                          color: AppTheme.pristineNavy,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          service.formattedPrice,
+                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          ptsLabel,
+                          style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFFD4A517)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                // Description (uppercase blue)
+                Text(
+                  service.description.isNotEmpty
+                      ? service.description.toUpperCase()
+                      : 'PREMIUM CAR CARE SERVICE',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.primaryBlue, letterSpacing: 0.5),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Duration
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded, size: 14, color: Colors.grey[500]),
+                    const SizedBox(width: 5),
+                    Text(
+                      service.formattedDuration,
+                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Book now + arrow
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        booking.resetBookingFlow();
+                        booking.selectService(service);
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F4FD),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'Book now',
+                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue),
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  ACTION CIRCLE
+  // ─────────────────────────────────────────────
+  Widget _actionCircle(IconData icon, String title, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 12, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: Icon(icon, color: AppTheme.pristineNavy, size: 26),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  BOTTOM NAV ITEM
+  // ─────────────────────────────────────────────
+  Widget _navItem(int index, IconData outlineIcon, IconData filledIcon, String label) {
+    final isSelected = _currentIndex == index;
+    final color = isSelected ? AppTheme.primaryBlue : AppTheme.textMuted;
+    final icon = isSelected ? filledIcon : outlineIcon;
+    return GestureDetector(
+      onTap: () => _onNavTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.outfit(fontSize: 10, fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500, color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+//  TIER COLORS DATA CLASS
+// ─────────────────────────────────────────────
+class _TierColors {
+  final Color cardBg;
+  final Color pillBg;
+  final Color pillText;
+  final Color accent;
+  final Color progressBar;
+
+  const _TierColors({
+    required this.cardBg,
+    required this.pillBg,
+    required this.pillText,
+    required this.accent,
+    required this.progressBar,
+  });
 }

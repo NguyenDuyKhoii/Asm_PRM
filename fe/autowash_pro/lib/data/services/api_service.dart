@@ -185,7 +185,7 @@ class ApiService {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body;
     } else {
-      throw Exception(body['message'] ?? 'Có lỗi xảy ra');
+      throw Exception(body['message'] ?? 'An error occurred');
     }
   }
 }
