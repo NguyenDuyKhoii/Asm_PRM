@@ -129,9 +129,9 @@ class ApiService {
       body: jsonEncode({
         'licensePlate': licensePlate,
         'vehicleType': vehicleType,
-        if (name != null) 'name': name,
-        if (color != null) 'color': color,
-        if (imageUrl != null) 'imageUrl': imageUrl,
+        'name': ?name,
+        'color': ?color,
+        'imageUrl': ?imageUrl,
       }),
     );
     return _handleResponse(response);

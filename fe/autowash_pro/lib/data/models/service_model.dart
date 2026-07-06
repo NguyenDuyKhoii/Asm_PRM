@@ -36,7 +36,7 @@ class ServiceModel {
       }
       buffer.write(chars[i]);
     }
-    return '${buffer} VND';
+    return '$buffer VND';
   }
 
   String get formattedDuration {
@@ -45,6 +45,6 @@ class ServiceModel {
       final mins = durationMinutes % 60;
       return mins > 0 ? '${hours}h${mins}p' : '${hours}h';
     }
-    return '${durationMinutes} mins';
+    return '$durationMinutes mins';
   }
 }

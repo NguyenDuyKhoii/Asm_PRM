@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
@@ -34,9 +33,9 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               final success = await provider.deleteVehicle(vehicle.id);
-              if (success && mounted) {
+              if (success && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vehicle deleted successfully!'), backgroundColor: AppTheme.success));
-              } else if (mounted) {
+              } else if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Delete failed!'), backgroundColor: AppTheme.error));
               }
             },

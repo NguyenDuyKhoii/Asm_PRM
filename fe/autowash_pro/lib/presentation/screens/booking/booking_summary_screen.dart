@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,7 +18,7 @@ class BookingSummaryScreen extends StatelessWidget {
       if (i > 0 && (chars.length - i) % 3 == 0) buffer.write('.');
       buffer.write(chars[i]);
     }
-    return '${buffer} VND';
+    return '$buffer VND';
   }
   @override
   Widget build(BuildContext context) {

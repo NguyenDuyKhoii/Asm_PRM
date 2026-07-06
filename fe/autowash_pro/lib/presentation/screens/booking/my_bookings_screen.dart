@@ -54,7 +54,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       if (i > 0 && (chars.length - i) % 3 == 0) buffer.write('.');
       buffer.write(chars[i]);
     }
-    return '${buffer} VND';
+    return '$buffer VND';
   }
 
   @override

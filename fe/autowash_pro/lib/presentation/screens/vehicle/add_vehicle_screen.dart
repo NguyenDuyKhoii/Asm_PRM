@@ -73,10 +73,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         return json['secure_url'];
       } else {
         var errorData = await response.stream.bytesToString();
-        print('Cloudinary Error: ${response.statusCode} - $errorData');
+        debugPrint('Cloudinary Error: ${response.statusCode} - $errorData');
       }
     } catch (e) {
-      print('Cloudinary Exception: $e');
+      debugPrint('Cloudinary Exception: $e');
     }
     return null;
   }
@@ -107,6 +107,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           imageUrl: uploadedUrl,
         );
 
+        if (!mounted) return;
         setState(() => _isUploading = false);
 
         if (success) {

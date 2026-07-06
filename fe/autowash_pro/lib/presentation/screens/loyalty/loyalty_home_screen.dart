@@ -47,16 +47,19 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
               elevation: 0,
             ),
             onPressed: () async {
-              Navigator.pop(context);
-              final success = await Provider.of<LoyaltyProvider>(context, listen: false).redeemReward(reward.id);
-              if (mounted) {
+              final navigator = Navigator.of(context);
+              final provider = Provider.of<LoyaltyProvider>(context, listen: false);
+              final messenger = ScaffoldMessenger.of(context);
+              navigator.pop();
+              final success = await provider.redeemReward(reward.id);
+              if (context.mounted) {
                 if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('Reward redeemed successfully!'), backgroundColor: AppTheme.success, behavior: SnackBarBehavior.floating),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(Provider.of<LoyaltyProvider>(context, listen: false).error ?? 'Error occurred'), backgroundColor: AppTheme.error, behavior: SnackBarBehavior.floating),
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(provider.error ?? 'Error occurred'), backgroundColor: AppTheme.error, behavior: SnackBarBehavior.floating),
                   );
                 }
               }
@@ -118,7 +121,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                   backgroundColor: AppTheme.accentLightBlue,
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20),
-                                    child: Image.asset('assets/images/background.png', fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.person, color: AppTheme.primaryBlue)),
+                                    child: Image.asset('assets/images/background.png', fit: BoxFit.cover, errorBuilder: (_, _, _) => Icon(Icons.person, color: AppTheme.primaryBlue)),
                                   ),
                                 ),
                                 const SizedBox(width: 12),

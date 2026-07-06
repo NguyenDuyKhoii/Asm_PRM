@@ -25,6 +25,6 @@ void main() async {
 
   var response = await request.send();
   var responseData = await response.stream.bytesToString();
-  print(response.statusCode);
-  print(responseData);
+  stdout.writeln(response.statusCode);
+  stdout.writeln(responseData);
 }

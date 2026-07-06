@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -266,7 +265,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   fit: BoxFit.cover,
                                   color: Colors.black.withAlpha(80),
                                   colorBlendMode: BlendMode.darken,
-                                  errorBuilder: (_,__,___) => Container(),
+                                  errorBuilder: (_, _, _) => Container(),
                                 ),
                               ),
                               Padding(
