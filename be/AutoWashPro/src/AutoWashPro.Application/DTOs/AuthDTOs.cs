@@ -22,4 +22,5 @@ public class AuthResponseDTO
     public string Email { get; set; } = string.Empty;
     public string Tier { get; set; } = string.Empty;
     public int LoyaltyPoints { get; set; }
+    public string Role { get; set; } = string.Empty;
 }

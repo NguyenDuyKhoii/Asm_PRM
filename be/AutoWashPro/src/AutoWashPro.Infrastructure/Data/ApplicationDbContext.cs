@@ -29,6 +29,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.Tier).HasConversion<int>();
+            entity.Property(e => e.Role).HasConversion<int>();
         });
 
         // Service configuration

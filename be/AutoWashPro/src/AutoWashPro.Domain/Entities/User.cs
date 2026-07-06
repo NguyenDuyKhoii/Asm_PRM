@@ -11,6 +11,7 @@ public class User
     public string Phone { get; set; } = string.Empty;
     public MemberTier Tier { get; set; } = MemberTier.Member;
     public int LoyaltyPoints { get; set; } = 0;
+    public UserRole Role { get; set; } = UserRole.Customer;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

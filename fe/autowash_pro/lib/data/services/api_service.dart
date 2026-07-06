@@ -179,6 +179,40 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  // ==================== ADMIN ====================
+  Future<Map<String, dynamic>> getAdminStats() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminStats),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getAdminBookings() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminBookings),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateBookingStatus(String bookingId, int status) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminBookings}/$bookingId/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getAdminUsers() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminUsers),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
   // ==================== HELPER ====================
   Map<String, dynamic> _handleResponse(http.Response response) {
     final body = jsonDecode(response.body);
