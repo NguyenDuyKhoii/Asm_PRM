@@ -60,7 +60,7 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> getBookingSummary(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId) async {
+  Future<Map<String, dynamic>> getBookingSummary(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId, {String? voucherId}) async {
     final response = await http.post(
       Uri.parse(ApiConstants.bookingSummary),
       headers: _headers,
@@ -69,12 +69,13 @@ class ApiService {
         'vehicleId': vehicleId,
         'bookingDate': bookingDate.toIso8601String(),
         'timeSlotId': timeSlotId,
+        'voucherId': ?voucherId,
       }),
     );
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> createBooking(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId) async {
+  Future<Map<String, dynamic>> createBooking(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId, {String? voucherId}) async {
     final response = await http.post(
       Uri.parse(ApiConstants.createBooking),
       headers: _headers,
@@ -83,6 +84,7 @@ class ApiService {
         'vehicleId': vehicleId,
         'bookingDate': bookingDate.toIso8601String(),
         'timeSlotId': timeSlotId,
+        'voucherId': ?voucherId,
       }),
     );
     return _handleResponse(response);
@@ -175,6 +177,190 @@ class ApiService {
     final response = await http.get(
       Uri.parse(ApiConstants.vouchers),
       headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== ADMIN ====================
+  Future<Map<String, dynamic>> getAdminStats() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminStats),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getAdminBookings() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminBookings),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateBookingStatus(String bookingId, int status) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminBookings}/$bookingId/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getAdminUsers() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminUsers),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== ADMIN SERVICES ====================
+  Future<Map<String, dynamic>> createService(String name, String description, double price, int durationMinutes, String imageUrl) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.services),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+        'price': price,
+        'durationMinutes': durationMinutes,
+        'imageUrl': imageUrl,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateService(String id, String name, String description, double price, int durationMinutes, String imageUrl, bool isActive) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.services}/$id'),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+        'price': price,
+        'durationMinutes': durationMinutes,
+        'imageUrl': imageUrl,
+        'isActive': isActive,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> deleteService(String id) async {
+    final response = await http.delete(
+      Uri.parse('${ApiConstants.services}/$id'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== ADMIN TIMESLOTS ====================
+  Future<Map<String, dynamic>> getAdminTimeSlots() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminTimeSlots),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> createTimeSlot(String dateIso, String startTime, String endTime, int maxCapacity) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.adminTimeSlots),
+      headers: _headers,
+      body: jsonEncode({
+        'date': dateIso,
+        'startTime': startTime,
+        'endTime': endTime,
+        'maxCapacity': maxCapacity,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateTimeSlot(String id, String dateIso, String startTime, String endTime, int maxCapacity) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminTimeSlots}/$id'),
+      headers: _headers,
+      body: jsonEncode({
+        'date': dateIso,
+        'startTime': startTime,
+        'endTime': endTime,
+        'maxCapacity': maxCapacity,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> deleteTimeSlot(String id) async {
+    final response = await http.delete(
+      Uri.parse('${ApiConstants.adminTimeSlots}/$id'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== ADMIN REWARDS ====================
+  Future<Map<String, dynamic>> getAdminRewards() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminRewards),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> createReward(String name, String description, int type, int pointsCost, double discountValue, String imageUrl) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.adminRewards),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+        'type': type,
+        'pointsCost': pointsCost,
+        'discountValue': discountValue,
+        'imageUrl': imageUrl,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateReward(String id, String name, String description, int type, int pointsCost, double discountValue, String imageUrl, bool isActive) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminRewards}/$id'),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+        'type': type,
+        'pointsCost': pointsCost,
+        'discountValue': discountValue,
+        'imageUrl': imageUrl,
+        'isActive': isActive,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> deleteReward(String id) async {
+    final response = await http.delete(
+      Uri.parse('${ApiConstants.adminRewards}/$id'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== ADMIN STAFF ====================
+  Future<Map<String, dynamic>> createStaffAccount(String fullName, String email, String password, String phone) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.adminStaff),
+      headers: _headers,
+      body: jsonEncode({
+        'fullName': fullName,
+        'email': email,
+        'password': password,
+        'phone': phone,
+      }),
     );
     return _handleResponse(response);
   }

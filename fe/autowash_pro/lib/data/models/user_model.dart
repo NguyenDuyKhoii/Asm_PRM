@@ -5,6 +5,7 @@ class UserModel {
   final String tier;
   final int loyaltyPoints;
   final String token;
+  final String role;
 
   UserModel({
     required this.userId,
@@ -13,6 +14,7 @@ class UserModel {
     required this.tier,
     required this.loyaltyPoints,
     required this.token,
+    required this.role,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json, {String? token}) {
@@ -23,6 +25,7 @@ class UserModel {
       tier: json['tier'] ?? 'Member',
       loyaltyPoints: json['loyaltyPoints'] ?? 0,
       token: token ?? json['token'] ?? '',
+      role: json['role'] ?? 'Customer',
     );
   }
 }

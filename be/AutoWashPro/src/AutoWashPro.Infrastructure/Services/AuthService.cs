@@ -52,7 +52,8 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Tier = user.Tier.GetTierName(),
-            LoyaltyPoints = user.LoyaltyPoints
+            LoyaltyPoints = user.LoyaltyPoints,
+            Role = user.Role.ToString()
         };
     }
 
@@ -71,7 +72,8 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Tier = user.Tier.GetTierName(),
-            LoyaltyPoints = user.LoyaltyPoints
+            LoyaltyPoints = user.LoyaltyPoints,
+            Role = user.Role.ToString()
         };
     }
 
@@ -86,6 +88,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim("Tier", ((int)user.Tier).ToString())
         };
 

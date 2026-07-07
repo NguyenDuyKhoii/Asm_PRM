@@ -27,4 +27,12 @@ class ApiConstants {
   static String get loyaltyHome => '$baseUrl/rewards/loyalty';
   static String get redeemReward => '$baseUrl/rewards/redeem';
   static String get vouchers => '$baseUrl/rewards/vouchers';
+
+  // Admin
+  static String get adminStats => '$baseUrl/admin/stats';
+  static String get adminBookings => '$baseUrl/admin/bookings';
+  static String get adminUsers => '$baseUrl/admin/users';
+  static String get adminTimeSlots => '$baseUrl/admin/timeslots';
+  static String get adminRewards => '$baseUrl/admin/rewards';
+  static String get adminStaff => '$baseUrl/admin/staff';
 }

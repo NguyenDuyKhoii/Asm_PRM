@@ -11,10 +11,24 @@ public class User
     public string Phone { get; set; } = string.Empty;
     public MemberTier Tier { get; set; } = MemberTier.Member;
     public int LoyaltyPoints { get; set; } = 0;
+    public UserRole Role { get; set; } = UserRole.Customer;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
+
+    public void UpdateTier()
+    {
+        if (LoyaltyPoints >= 1000)
+            Tier = MemberTier.Platinum;
+        else if (LoyaltyPoints >= 500)
+            Tier = MemberTier.Gold;
+        else if (LoyaltyPoints >= 200)
+            Tier = MemberTier.Silver;
+        else
+            Tier = MemberTier.Member;
+    }
 }
+

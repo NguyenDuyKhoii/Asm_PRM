@@ -80,6 +80,7 @@ public static class DbSeeder
                 Phone = "0901234567",
                 Tier = MemberTier.Platinum,
                 LoyaltyPoints = 500,
+                Role = UserRole.Customer,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -92,10 +93,24 @@ public static class DbSeeder
                 Phone = "0909876543",
                 Tier = MemberTier.Member,
                 LoyaltyPoints = 50,
+                Role = UserRole.Customer,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await context.Users.AddRangeAsync(demoUser, memberUser);
+            var adminUser = new User
+            {
+                Id = Guid.Parse("d1e2f3a4-b5c6-7890-abcd-ef1234567892"),
+                FullName = "System Admin",
+                Email = "admin@autowash.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                Phone = "0900000000",
+                Tier = MemberTier.Member,
+                LoyaltyPoints = 0,
+                Role = UserRole.Admin,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await context.Users.AddRangeAsync(demoUser, memberUser, adminUser);
 
             // Seed Vehicles for demo users
             var vehicles = new List<Vehicle>

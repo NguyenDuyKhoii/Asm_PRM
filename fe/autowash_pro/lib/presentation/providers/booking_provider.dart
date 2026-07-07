@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:autowash_pro/data/models/service_model.dart';
 import 'package:autowash_pro/data/models/booking_model.dart';
 import 'package:autowash_pro/data/models/user_model.dart';
+import 'package:autowash_pro/data/models/reward_model.dart';
 import 'package:autowash_pro/data/services/api_service.dart';
 
 class BookingProvider with ChangeNotifier {
@@ -25,6 +26,7 @@ class BookingProvider with ChangeNotifier {
   DateTime? _selectedDate;
   AvailableSlotModel? _selectedSlot;
   VehicleModel? _selectedVehicle;
+  VoucherModel? _selectedVoucher;
 
   // Getters
   List<ServiceModel> get services => _services;
@@ -40,6 +42,13 @@ class BookingProvider with ChangeNotifier {
   DateTime? get selectedDate => _selectedDate;
   AvailableSlotModel? get selectedSlot => _selectedSlot;
   VehicleModel? get selectedVehicle => _selectedVehicle;
+  VoucherModel? get selectedVoucher => _selectedVoucher;
+
+  void selectVoucher(VoucherModel? voucher) {
+    _selectedVoucher = voucher;
+    notifyListeners();
+    loadBookingSummary();
+  }
 
   // ==================== SERVICES ====================
   Future<void> loadServices() async {
@@ -169,6 +178,7 @@ class BookingProvider with ChangeNotifier {
         _selectedVehicle!.id,
         _selectedDate!,
         _selectedSlot!.timeSlotId,
+        voucherId: _selectedVoucher?.id,
       );
       _bookingSummary = BookingSummaryModel.fromJson(result['data']);
       _isLoading = false;
@@ -198,6 +208,7 @@ class BookingProvider with ChangeNotifier {
         _selectedVehicle!.id,
         _selectedDate!,
         _selectedSlot!.timeSlotId,
+        voucherId: _selectedVoucher?.id,
       );
       _bookingConfirmation = BookingConfirmationModel.fromJson(result['data']);
       _isLoading = false;
@@ -234,6 +245,7 @@ class BookingProvider with ChangeNotifier {
     _selectedDate = null;
     _selectedSlot = null;
     _selectedVehicle = null;
+    _selectedVoucher = null;
     _bookingSummary = null;
     _bookingConfirmation = null;
     _availableSlots = [];

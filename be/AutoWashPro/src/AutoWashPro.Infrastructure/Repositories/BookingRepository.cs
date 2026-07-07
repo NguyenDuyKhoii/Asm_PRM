@@ -67,6 +67,44 @@ public class BookingRepository : IBookingRepository
             ? $"Giảm {discountPercentage}% cho hạng {user.Tier.GetTierName()}"
             : "Không có ưu đãi";
 
+        decimal voucherDiscountAmount = 0;
+        string? voucherCode = null;
+
+        if (dto.VoucherId.HasValue)
+        {
+            var voucher = await _context.Vouchers
+                .Include(v => v.Reward)
+                .FirstOrDefaultAsync(v => v.Id == dto.VoucherId.Value && v.UserId == userId);
+
+            if (voucher != null)
+            {
+                if (voucher.IsUsed)
+                {
+                    throw new Exception("Voucher này đã được sử dụng.");
+                }
+                if (voucher.ExpiryDate < DateTime.UtcNow)
+                {
+                    throw new Exception("Voucher này đã hết hạn.");
+                }
+
+                voucherCode = voucher.Code;
+                if (voucher.Reward.Type == RewardType.Discount)
+                {
+                    voucherDiscountAmount = service.Price * voucher.Reward.DiscountValue / 100;
+                }
+                else
+                {
+                    voucherDiscountAmount = voucher.Reward.DiscountValue;
+                }
+
+                if (voucherDiscountAmount > finalPrice)
+                {
+                    voucherDiscountAmount = finalPrice;
+                }
+                finalPrice -= voucherDiscountAmount;
+            }
+        }
+
         return new BookingSummaryDTO
         {
             ServiceId = service.Id,
@@ -79,6 +117,8 @@ public class BookingRepository : IBookingRepository
             OriginalPrice = service.Price,
             DiscountPercentage = discountPercentage,
             DiscountAmount = discountAmount,
+            VoucherDiscountAmount = voucherDiscountAmount,
+            VoucherCode = voucherCode,
             FinalPrice = finalPrice,
             TierName = user.Tier.GetTierName(),
             PerkApplied = perkApplied
@@ -118,6 +158,47 @@ public class BookingRepository : IBookingRepository
         var discountAmount = service.Price * discountPercentage / 100;
         var totalPrice = service.Price - discountAmount;
 
+        decimal voucherDiscountAmount = 0;
+        Voucher? appliedVoucher = null;
+
+        if (dto.VoucherId.HasValue)
+        {
+            appliedVoucher = await _context.Vouchers
+                .Include(v => v.Reward)
+                .FirstOrDefaultAsync(v => v.Id == dto.VoucherId.Value && v.UserId == userId);
+
+            if (appliedVoucher == null)
+            {
+                throw new Exception("Không tìm thấy voucher hợp lệ.");
+            }
+            if (appliedVoucher.IsUsed)
+            {
+                throw new Exception("Voucher này đã được sử dụng.");
+            }
+            if (appliedVoucher.ExpiryDate < DateTime.UtcNow)
+            {
+                throw new Exception("Voucher này đã hết hạn.");
+            }
+
+            if (appliedVoucher.Reward.Type == RewardType.Discount)
+            {
+                voucherDiscountAmount = service.Price * appliedVoucher.Reward.DiscountValue / 100;
+            }
+            else
+            {
+                voucherDiscountAmount = appliedVoucher.Reward.DiscountValue;
+            }
+
+            if (voucherDiscountAmount > totalPrice)
+            {
+                voucherDiscountAmount = totalPrice;
+            }
+            totalPrice -= voucherDiscountAmount;
+            
+            // Mark voucher as used
+            appliedVoucher.IsUsed = true;
+        }
+
         // Generate QR Code (Base64 encoded booking info)
         var bookingId = Guid.NewGuid();
         var qrData = $"AUTOWASH|{bookingId}|{vehicle.LicensePlate}|{dto.BookingDate:yyyy-MM-dd}|{timeSlot.StartTime:hh\\:mm}";
@@ -132,17 +213,13 @@ public class BookingRepository : IBookingRepository
             BookingDate = dto.BookingDate.Date,
             TimeSlotId = dto.TimeSlotId,
             TotalPrice = totalPrice,
-            DiscountAmount = discountAmount,
+            DiscountAmount = discountAmount + voucherDiscountAmount,
             Status = BookingStatus.Confirmed,
             QrCode = qrCode,
             CreatedAt = DateTime.UtcNow
         };
 
         _context.Bookings.Add(booking);
-
-        // Add loyalty points (10 points per 100k VND)
-        var pointsEarned = (int)(totalPrice / 100000) * 10;
-        user.LoyaltyPoints += pointsEarned;
 
         await _context.SaveChangesAsync();
 

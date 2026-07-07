@@ -11,9 +11,11 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider(this._apiService);
 
+  ApiService get apiService => _apiService;
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null;
+  bool get isAdmin => _user?.role == 'Admin';
   String? get error => _error;
 
   Future<void> checkAuth() async {
@@ -24,6 +26,7 @@ class AuthProvider with ChangeNotifier {
     final email = prefs.getString('email');
     final tier = prefs.getString('tier');
     final points = prefs.getInt('loyaltyPoints');
+    final role = prefs.getString('role');
 
     if (token != null && userId != null) {
       _user = UserModel(
@@ -33,6 +36,7 @@ class AuthProvider with ChangeNotifier {
         tier: tier ?? 'Member',
         loyaltyPoints: points ?? 0,
         token: token,
+        role: role ?? 'Customer',
       );
       _apiService.setToken(token);
       notifyListeners();
@@ -98,5 +102,6 @@ class AuthProvider with ChangeNotifier {
     await prefs.setString('email', _user!.email);
     await prefs.setString('tier', _user!.tier);
     await prefs.setInt('loyaltyPoints', _user!.loyaltyPoints);
+    await prefs.setString('role', _user!.role);
   }
 }
