@@ -32,4 +32,7 @@ class ApiConstants {
   static String get adminStats => '$baseUrl/admin/stats';
   static String get adminBookings => '$baseUrl/admin/bookings';
   static String get adminUsers => '$baseUrl/admin/users';
+  static String get adminTimeSlots => '$baseUrl/admin/timeslots';
+  static String get adminRewards => '$baseUrl/admin/rewards';
+  static String get adminStaff => '$baseUrl/admin/staff';
 }
