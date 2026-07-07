@@ -1556,7 +1556,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     validator: (v) => v == null || v.trim().isEmpty ? 'Nhập mô tả' : null,
                   ),
                   DropdownButtonFormField<int>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: const InputDecoration(labelText: 'Loại quà tặng'),
                     items: const [
                       DropdownMenuItem(value: 0, child: Text('Giảm giá hóa đơn (VND)')),

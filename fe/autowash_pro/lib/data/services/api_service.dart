@@ -69,7 +69,7 @@ class ApiService {
         'vehicleId': vehicleId,
         'bookingDate': bookingDate.toIso8601String(),
         'timeSlotId': timeSlotId,
-        if (voucherId != null) 'voucherId': voucherId,
+        'voucherId': ?voucherId,
       }),
     );
     return _handleResponse(response);
@@ -84,7 +84,7 @@ class ApiService {
         'vehicleId': vehicleId,
         'bookingDate': bookingDate.toIso8601String(),
         'timeSlotId': timeSlotId,
-        if (voucherId != null) 'voucherId': voucherId,
+        'voucherId': ?voucherId,
       }),
     );
     return _handleResponse(response);
