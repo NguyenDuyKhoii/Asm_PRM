@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
+import 'package:autowash_pro/presentation/providers/loyalty_provider.dart';
 import 'package:autowash_pro/presentation/screens/booking/booking_success_screen.dart';
 
 class BookingSummaryScreen extends StatelessWidget {
@@ -19,6 +20,116 @@ class BookingSummaryScreen extends StatelessWidget {
       buffer.write(chars[i]);
     }
     return '$buffer VND';
+  }
+
+  void _showVoucherBottomSheet(BuildContext context) {
+    final loyaltyProvider = Provider.of<LoyaltyProvider>(context, listen: false);
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    
+    loyaltyProvider.loadVouchers();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Consumer<LoyaltyProvider>(
+          builder: (context, lProvider, _) {
+            if (lProvider.isLoading) {
+              return const SizedBox(
+                height: 300,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            final usableVouchers = lProvider.vouchers.where((v) {
+              final isExpired = v.expiryDate.isBefore(DateTime.now());
+              return !v.isUsed && !isExpired;
+            }).toList();
+
+            if (usableVouchers.isEmpty) {
+              return SizedBox(
+                height: 250,
+                child: Center(
+                  child: Text(
+                    'Bạn không có voucher nào khả dụng',
+                    style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                  ),
+                ),
+              );
+            }
+
+            return Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Chọn Voucher',
+                    style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: usableVouchers.length,
+                      itemBuilder: (context, index) {
+                        final voucher = usableVouchers[index];
+                        final isSelected = bookingProvider.selectedVoucher?.id == voucher.id;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppTheme.primaryBlue.withAlpha(10) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade200,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryBlue.withAlpha(20),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.local_offer_rounded, color: AppTheme.primaryBlue),
+                            ),
+                            title: Text(
+                              voucher.rewardName,
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.pristineNavy),
+                            ),
+                            subtitle: Text(
+                              'Hạn dùng: ${DateFormat('dd/MM/yyyy').format(voucher.expiryDate)}\nCode: ${voucher.code}',
+                              style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary),
+                            ),
+                            trailing: isSelected
+                                ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryBlue)
+                                : const Icon(Icons.circle_outlined, color: Colors.grey),
+                            onTap: () {
+                              if (isSelected) {
+                                bookingProvider.selectVoucher(null);
+                              } else {
+                                bookingProvider.selectVoucher(voucher);
+                              }
+                              Navigator.pop(context);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
   @override
   Widget build(BuildContext context) {
@@ -246,7 +357,59 @@ class BookingSummaryScreen extends StatelessWidget {
                             ],
                           ),
                         ).animate().fadeIn(duration: 400.ms, delay: 250.ms).slideY(begin: 0.1),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
+
+                        // Voucher Section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(220),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.local_offer_outlined, color: AppTheme.primaryBlue, size: 22),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: provider.selectedVoucher == null
+                                    ? Text(
+                                        'Khuyến mãi & Voucher',
+                                        style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
+                                      )
+                                    : Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            provider.selectedVoucher!.rewardName,
+                                            style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.pristineNavy, fontWeight: FontWeight.w800),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Code: ${provider.selectedVoucher!.code}',
+                                            style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                              provider.selectedVoucher == null
+                                  ? TextButton(
+                                      onPressed: () => _showVoucherBottomSheet(context),
+                                      child: Text(
+                                        'Chọn',
+                                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                                      ),
+                                    )
+                                  : IconButton(
+                                      icon: const Icon(Icons.cancel_rounded, color: Colors.red),
+                                      onPressed: () {
+                                        provider.selectVoucher(null);
+                                      },
+                                    ),
+                            ],
+                          ),
+                        ).animate().fadeIn(duration: 400.ms, delay: 280.ms).slideY(begin: 0.1),
+                        const SizedBox(height: 24),
 
                         // Pricing Section
                         Row(
@@ -271,6 +434,19 @@ class BookingSummaryScreen extends StatelessWidget {
                               Text(
                                 '- ${_formatCurrency(summary.discountAmount)}',
                                 style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.primaryBlue, fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (summary.voucherDiscountAmount > 0) ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Voucher Discount', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+                              Text(
+                                '- ${_formatCurrency(summary.voucherDiscountAmount)}',
+                                style: GoogleFonts.outfit(fontSize: 14, color: Colors.green.shade700, fontWeight: FontWeight.w800),
                               ),
                             ],
                           ),

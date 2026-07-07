@@ -60,7 +60,7 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> getBookingSummary(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId) async {
+  Future<Map<String, dynamic>> getBookingSummary(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId, {String? voucherId}) async {
     final response = await http.post(
       Uri.parse(ApiConstants.bookingSummary),
       headers: _headers,
@@ -69,12 +69,13 @@ class ApiService {
         'vehicleId': vehicleId,
         'bookingDate': bookingDate.toIso8601String(),
         'timeSlotId': timeSlotId,
+        if (voucherId != null) 'voucherId': voucherId,
       }),
     );
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> createBooking(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId) async {
+  Future<Map<String, dynamic>> createBooking(String serviceId, String vehicleId, DateTime bookingDate, String timeSlotId, {String? voucherId}) async {
     final response = await http.post(
       Uri.parse(ApiConstants.createBooking),
       headers: _headers,
@@ -83,6 +84,7 @@ class ApiService {
         'vehicleId': vehicleId,
         'bookingDate': bookingDate.toIso8601String(),
         'timeSlotId': timeSlotId,
+        if (voucherId != null) 'voucherId': voucherId,
       }),
     );
     return _handleResponse(response);

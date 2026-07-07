@@ -8,6 +8,7 @@ public class CreateBookingDTO
     public Guid VehicleId { get; set; }
     public DateTime BookingDate { get; set; }
     public Guid TimeSlotId { get; set; }
+    public Guid? VoucherId { get; set; }
 }
 
 public class BookingSummaryDTO
@@ -22,6 +23,8 @@ public class BookingSummaryDTO
     public decimal OriginalPrice { get; set; }
     public decimal DiscountPercentage { get; set; }
     public decimal DiscountAmount { get; set; }
+    public decimal VoucherDiscountAmount { get; set; }
+    public string? VoucherCode { get; set; }
     public decimal FinalPrice { get; set; }
     public string TierName { get; set; } = string.Empty;
     public string PerkApplied { get; set; } = string.Empty;

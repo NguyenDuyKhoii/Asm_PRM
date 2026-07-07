@@ -113,7 +113,9 @@ public class AdminController : ControllerBase
     {
         try
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id);
             if (booking == null)
             {
                 return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy booking."));
@@ -124,7 +126,19 @@ public class AdminController : ControllerBase
                 return BadRequest(ApiResponse<bool>.ErrorResponse("Trạng thái không hợp lệ."));
             }
 
-            booking.Status = (BookingStatus)dto.Status;
+            var newStatus = (BookingStatus)dto.Status;
+            if (booking.Status != BookingStatus.Completed && newStatus == BookingStatus.Completed)
+            {
+                // Add loyalty points (10 points per 100k VND)
+                var pointsEarned = (int)(booking.TotalPrice / 100000) * 10;
+                if (booking.User != null)
+                {
+                    booking.User.LoyaltyPoints += pointsEarned;
+                    booking.User.UpdateTier();
+                }
+            }
+
+            booking.Status = newStatus;
             await _context.SaveChangesAsync();
 
             return Ok(ApiResponse<bool>.SuccessResponse(true, "Cập nhật trạng thái thành công!"));

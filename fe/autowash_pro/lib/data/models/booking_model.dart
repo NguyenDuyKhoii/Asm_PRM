@@ -39,6 +39,8 @@ class BookingSummaryModel {
   final double originalPrice;
   final double discountPercentage;
   final double discountAmount;
+  final double voucherDiscountAmount;
+  final String? voucherCode;
   final double finalPrice;
   final String tierName;
   final String perkApplied;
@@ -54,6 +56,8 @@ class BookingSummaryModel {
     required this.originalPrice,
     required this.discountPercentage,
     required this.discountAmount,
+    required this.voucherDiscountAmount,
+    this.voucherCode,
     required this.finalPrice,
     required this.tierName,
     required this.perkApplied,
@@ -71,6 +75,8 @@ class BookingSummaryModel {
       originalPrice: (json['originalPrice'] ?? 0).toDouble(),
       discountPercentage: (json['discountPercentage'] ?? 0).toDouble(),
       discountAmount: (json['discountAmount'] ?? 0).toDouble(),
+      voucherDiscountAmount: (json['voucherDiscountAmount'] ?? 0).toDouble(),
+      voucherCode: json['voucherCode'],
       finalPrice: (json['finalPrice'] ?? 0).toDouble(),
       tierName: json['tierName'] ?? '',
       perkApplied: json['perkApplied'] ?? '',
