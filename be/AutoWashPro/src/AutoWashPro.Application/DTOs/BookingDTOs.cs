@@ -52,6 +52,10 @@ public class BookingListDTO
     public decimal TotalPrice { get; set; }
     public string Status { get; set; } = string.Empty;
     public string QrCode { get; set; } = string.Empty;
+    public Guid? StaffId { get; set; }
+    public string? Checklist { get; set; }
+    public string? CompletionImageUrl { get; set; }
+    public DateTime? CompletedAt { get; set; }
 }
 
 public class AvailableSlotDTO

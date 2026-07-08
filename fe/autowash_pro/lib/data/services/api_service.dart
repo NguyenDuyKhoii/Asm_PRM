@@ -90,9 +90,60 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> getMyBookings() async {
+    Future<Map<String, dynamic>> getMyBookings() async {
     final response = await http.get(
       Uri.parse(ApiConstants.myBookings),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getTodayBookings() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/today'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateStaffBookingStatus(String id, int newStatus) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/status'),
+      headers: _headers,
+      body: jsonEncode(newStatus),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> claimBooking(String id) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/claim'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateChecklist(String id, Map<String, dynamic> checklist) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/checklist'),
+      headers: _headers,
+      body: jsonEncode(jsonEncode(checklist)), // backend expects a string body which is JSON itself
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> completeBooking(String id, String imageUrl) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/complete'),
+      headers: _headers,
+      body: jsonEncode(imageUrl),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getStaffStats() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/staff-stats'),
       headers: _headers,
     );
     return _handleResponse(response);

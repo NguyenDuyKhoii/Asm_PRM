@@ -99,6 +99,22 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.EnsureCreatedAsync();
+    
+    // Dynamically add columns for Staff features if they don't exist
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE ""Bookings"" ADD COLUMN IF NOT EXISTS ""StaffId"" uuid NULL;
+            ALTER TABLE ""Bookings"" ADD COLUMN IF NOT EXISTS ""Checklist"" text NULL;
+            ALTER TABLE ""Bookings"" ADD COLUMN IF NOT EXISTS ""CompletionImageUrl"" text NULL;
+            ALTER TABLE ""Bookings"" ADD COLUMN IF NOT EXISTS ""CompletedAt"" timestamp with time zone NULL;
+        ");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error adding staff columns: {ex.Message}");
+    }
+
     await DbSeeder.SeedAsync(context);
 }
 
