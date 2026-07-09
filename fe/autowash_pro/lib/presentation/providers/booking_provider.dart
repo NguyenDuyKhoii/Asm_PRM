@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:autowash_pro/data/models/service_model.dart';
 import 'package:autowash_pro/data/models/booking_model.dart';
@@ -15,6 +16,8 @@ class BookingProvider with ChangeNotifier {
   List<AvailableSlotModel> _availableSlots = [];
   List<VehicleModel> _vehicles = [];
   List<BookingListModel> _myBookings = [];
+  List<BookingListModel> _todayBookings = []; // Also used for all active staff bookings
+  Map<String, dynamic>? _staffStats;
   UserTierModel? _userTier;
   BookingSummaryModel? _bookingSummary;
   BookingConfirmationModel? _bookingConfirmation;
@@ -33,6 +36,8 @@ class BookingProvider with ChangeNotifier {
   List<AvailableSlotModel> get availableSlots => _availableSlots;
   List<VehicleModel> get vehicles => _vehicles;
   List<BookingListModel> get myBookings => _myBookings;
+  List<BookingListModel> get todayBookings => _todayBookings;
+  Map<String, dynamic>? get staffStats => _staffStats;
   UserTierModel? get userTier => _userTier;
   BookingSummaryModel? get bookingSummary => _bookingSummary;
   BookingConfirmationModel? get bookingConfirmation => _bookingConfirmation;
@@ -237,6 +242,102 @@ class BookingProvider with ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  // ==================== STAFF (TODAY BOOKINGS) ====================
+  Future<void> fetchTodayBookings() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await _apiService.getTodayBookings();
+      final List data = result['data'];
+      _todayBookings = data.map((e) => BookingListModel.fromJson(e)).toList();
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<bool> updateBookingStatus(String bookingId, int newStatus) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _apiService.updateStaffBookingStatus(bookingId, newStatus);
+      // Refresh list after updating
+      await fetchTodayBookings();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> claimBooking(String bookingId) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _apiService.claimBooking(bookingId);
+      await fetchTodayBookings();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateChecklist(String bookingId, Map<String, dynamic> checklist) async {
+    // Cập nhật giao diện ngay lập tức (Optimistic Update) để không bị giật lag
+    final index = _todayBookings.indexWhere((b) => b.id == bookingId);
+    if (index != -1) {
+      _todayBookings[index].checklist = jsonEncode(checklist);
+      notifyListeners();
+    }
+
+    try {
+      await _apiService.updateChecklist(bookingId, checklist);
+      // Không gọi fetchTodayBookings() để tránh reload toàn bộ danh sách
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> completeBooking(String bookingId, String imageUrl) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _apiService.completeBooking(bookingId, imageUrl);
+      await fetchTodayBookings();
+      await fetchStaffStats();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> fetchStaffStats() async {
+    try {
+      final result = await _apiService.getStaffStats();
+      _staffStats = result['data'];
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+    }
   }
 
   // ==================== RESET ====================

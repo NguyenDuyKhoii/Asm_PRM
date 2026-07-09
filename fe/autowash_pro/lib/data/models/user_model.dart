@@ -25,7 +25,7 @@ class UserModel {
       tier: json['tier'] ?? 'Member',
       loyaltyPoints: json['loyaltyPoints'] ?? 0,
       token: token ?? json['token'] ?? '',
-      role: json['role'] ?? 'Customer',
+      role: json['role']?.toString() ?? 'Customer',
     );
   }
 }

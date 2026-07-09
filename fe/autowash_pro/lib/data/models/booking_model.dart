@@ -128,6 +128,9 @@ class BookingListModel {
   final double totalPrice;
   final String status;
   final String qrCode;
+  final String? staffId;
+  String? checklist;
+  final String? completionImageUrl;
 
   BookingListModel({
     required this.id,
@@ -138,6 +141,9 @@ class BookingListModel {
     required this.totalPrice,
     required this.status,
     required this.qrCode,
+    this.staffId,
+    this.checklist,
+    this.completionImageUrl,
   });
 
   factory BookingListModel.fromJson(Map<String, dynamic> json) {
@@ -150,6 +156,9 @@ class BookingListModel {
       totalPrice: (json['totalPrice'] ?? 0).toDouble(),
       status: json['status'] ?? '',
       qrCode: json['qrCode'] ?? '',
+      staffId: json['staffId'],
+      checklist: json['checklist'],
+      completionImageUrl: json['completionImageUrl'],
     );
   }
 }

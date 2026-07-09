@@ -14,6 +14,10 @@ public class Booking
     public decimal DiscountAmount { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
     public string QrCode { get; set; } = string.Empty;
+    public Guid? StaffId { get; set; }
+    public string? Checklist { get; set; } // JSON format
+    public string? CompletionImageUrl { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
