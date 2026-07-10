@@ -35,4 +35,7 @@ class ApiConstants {
   static String get adminTimeSlots => '$baseUrl/admin/timeslots';
   static String get adminRewards => '$baseUrl/admin/rewards';
   static String get adminStaff => '$baseUrl/admin/staff';
+  static String get adminChemicals => '$baseUrl/admin/chemicals';
+  static String get adminServiceChemicals => '$baseUrl/admin/service-chemicals';
+  static String get adminReviews => '$baseUrl/admin/reviews';
 }

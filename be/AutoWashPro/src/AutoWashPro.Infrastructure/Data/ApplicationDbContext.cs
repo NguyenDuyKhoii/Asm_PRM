@@ -14,6 +14,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<TimeSlot> TimeSlots => Set<TimeSlot>();
     public DbSet<Reward> Rewards => Set<Reward>();
     public DbSet<Voucher> Vouchers => Set<Voucher>();
+    public DbSet<Chemical> Chemicals => Set<Chemical>();
+    public DbSet<ServiceChemical> ServiceChemicals => Set<ServiceChemical>();
+    public DbSet<ChemicalLog> ChemicalLogs => Set<ChemicalLog>();
+    public DbSet<Review> Reviews => Set<Review>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -116,6 +120,64 @@ public class ApplicationDbContext : DbContext
                   .WithMany(r => r.Vouchers)
                   .HasForeignKey(e => e.RewardId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Chemical configuration
+        modelBuilder.Entity<Chemical>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Unit).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CurrentStock).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.MinimumStock).HasColumnType("decimal(18,2)");
+        });
+
+        // ServiceChemical configuration
+        modelBuilder.Entity<ServiceChemical>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ServiceId, e.ChemicalId }).IsUnique();
+            entity.Property(e => e.QuantityPerWash).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Service)
+                  .WithMany(s => s.ServiceChemicals)
+                  .HasForeignKey(e => e.ServiceId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Chemical)
+                  .WithMany(c => c.ServiceChemicals)
+                  .HasForeignKey(e => e.ChemicalId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ChemicalLog configuration
+        modelBuilder.Entity<ChemicalLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ChangeAmount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Reason).IsRequired().HasMaxLength(500);
+            entity.HasOne(e => e.Chemical)
+                  .WithMany(c => c.ChemicalLogs)
+                  .HasForeignKey(e => e.ChemicalId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Booking)
+                  .WithMany(b => b.ChemicalLogs)
+                  .HasForeignKey(e => e.BookingId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Review configuration
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.BookingId).IsUnique();
+            entity.Property(e => e.Comment).HasMaxLength(1000);
+            entity.HasOne(e => e.Booking)
+                  .WithOne(b => b.Review)
+                  .HasForeignKey<Review>(e => e.BookingId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.Reviews)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -109,6 +109,54 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE ""Bookings"" ADD COLUMN IF NOT EXISTS ""CompletionImageUrl"" text NULL;
             ALTER TABLE ""Bookings"" ADD COLUMN IF NOT EXISTS ""CompletedAt"" timestamp with time zone NULL;
         ");
+
+        // Create Chemicals table
+        await context.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""Chemicals"" (
+                ""Id"" uuid PRIMARY KEY,
+                ""Name"" character varying(100) NOT NULL,
+                ""Unit"" character varying(50) NOT NULL,
+                ""CurrentStock"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""MinimumStock"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT NOW(),
+                ""UpdatedAt"" timestamp with time zone NOT NULL DEFAULT NOW()
+            );
+        ");
+
+        // Create ServiceChemicals table
+        await context.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""ServiceChemicals"" (
+                ""Id"" uuid PRIMARY KEY,
+                ""ServiceId"" uuid NOT NULL REFERENCES ""Services""(""Id"") ON DELETE CASCADE,
+                ""ChemicalId"" uuid NOT NULL REFERENCES ""Chemicals""(""Id"") ON DELETE CASCADE,
+                ""QuantityPerWash"" numeric(18,2) NOT NULL DEFAULT 0,
+                UNIQUE(""ServiceId"", ""ChemicalId"")
+            );
+        ");
+
+        // Create ChemicalLogs table
+        await context.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""ChemicalLogs"" (
+                ""Id"" uuid PRIMARY KEY,
+                ""ChemicalId"" uuid NOT NULL REFERENCES ""Chemicals""(""Id"") ON DELETE CASCADE,
+                ""ChangeAmount"" numeric(18,2) NOT NULL,
+                ""Reason"" character varying(500) NOT NULL,
+                ""BookingId"" uuid NULL REFERENCES ""Bookings""(""Id"") ON DELETE SET NULL,
+                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT NOW()
+            );
+        ");
+
+        // Create Reviews table
+        await context.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""Reviews"" (
+                ""Id"" uuid PRIMARY KEY,
+                ""BookingId"" uuid NOT NULL UNIQUE REFERENCES ""Bookings""(""Id"") ON DELETE CASCADE,
+                ""UserId"" uuid NOT NULL REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
+                ""Rating"" integer NOT NULL,
+                ""Comment"" character varying(1000) NULL,
+                ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT NOW()
+            );
+        ");
     }
     catch (Exception ex)
     {

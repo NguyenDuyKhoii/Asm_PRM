@@ -15,4 +15,5 @@ public interface IBookingRepository
     Task<bool> UpdateChecklistAsync(Guid bookingId, string checklistJson);
     Task<bool> CompleteBookingAsync(Guid bookingId, string imageUrl);
     Task<object> GetStaffStatsAsync(Guid staffId);
+    Task<List<LowStockWarningDTO>> GetLowStockWarningsAsync();
 }

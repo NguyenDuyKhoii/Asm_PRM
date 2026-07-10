@@ -22,16 +22,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   List<dynamic> _timeslots = [];
   List<dynamic> _rewards = [];
   List<dynamic> _services = [];
+  List<dynamic> _staffList = [];
+  List<dynamic> _chemicals = [];
+  List<dynamic> _adminReviews = [];
   String? _error;
 
   // Search & Filter State
   String _selectedStatusFilter = 'All';
   final _bookingSearchController = TextEditingController();
   final _userSearchController = TextEditingController();
-  
+
   // Segment toggles for lists
   String _userSubTab = 'Customer'; // Customer | Staff
-  String _configSubTab = 'Services'; // Services | TimeSlots | Rewards
+  String _configSubTab = 'Services'; // Services | TimeSlots | Rewards | Reviews
+  String _chemicalSubTab = 'Inventory'; // Inventory | LowStock | ServiceMap
 
   // Calendar & Pagination limits
   DateTime _selectedTimeSlotDate = DateTime.now();
@@ -71,6 +75,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final servicesRes = await apiService.getServices();
       final timeslotsRes = await apiService.getAdminTimeSlots();
       final rewardsRes = await apiService.getAdminRewards();
+      final staffRes = await apiService.getStaffList();
+      final chemicalsRes = await apiService.getChemicals();
+      final reviewsRes = await apiService.getAdminReviews();
 
       if (mounted) {
         setState(() {
@@ -80,6 +87,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           _services = servicesRes['data'] ?? [];
           _timeslots = timeslotsRes['data'] ?? [];
           _rewards = rewardsRes['data'] ?? [];
+          _staffList = staffRes['data'] ?? [];
+          _chemicals = chemicalsRes['data'] ?? [];
+          _adminReviews = reviewsRes['data'] ?? [];
           _isLoading = false;
         });
       }
@@ -345,6 +355,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Tổng quan'),
           BottomNavigationBarItem(icon: Icon(Icons.book_online_rounded), label: 'Đặt lịch'),
           BottomNavigationBarItem(icon: Icon(Icons.people_rounded), label: 'Thành viên'),
+          BottomNavigationBarItem(icon: Icon(Icons.science_rounded), label: 'Hóa chất'),
           BottomNavigationBarItem(icon: Icon(Icons.settings_suggest_rounded), label: 'Cấu hình'),
         ],
       ),
@@ -360,6 +371,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 2:
         return 'QUẢN LÝ THÀNH VIÊN';
       case 3:
+        return 'QUẢN LÝ HÓA CHẤT';
+      case 4:
         return 'CẤU HÌNH HỆ THỐNG';
       default:
         return 'ADMIN DASHBOARD';
@@ -375,6 +388,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 2:
         return _buildUsersTab();
       case 3:
+        return _buildChemicalsTab();
+      case 4:
         return _buildConfigTab();
       default:
         return const SizedBox.shrink();
@@ -674,6 +689,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const Icon(Icons.access_time_rounded, size: 12, color: AppTheme.textSecondary),
               const SizedBox(width: 4),
               Text(timeSlotDisplay, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+            ],
+          ),
+          // Staff assignment row
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.person_outline_rounded, size: 12, color: AppTheme.textSecondary),
+              const SizedBox(width: 4),
+              if (booking['staffName'] != null)
+                Text('Thợ: ${booking['staffName']}', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.success))
+              else if (booking['staffId'] != null)
+                Text('Đã phân công', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.success))
+              else ...[
+                Text('Chưa phân công', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.warning)),
+                const SizedBox(width: 8),
+                if (status.toLowerCase() != 'completed' && status.toLowerCase() != 'cancelled')
+                  GestureDetector(
+                    onTap: () => _showAssignStaffDialog(bookingId),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue.withAlpha(15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppTheme.primaryBlue.withAlpha(40)),
+                      ),
+                      child: Text('Phân công', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue)),
+                    ),
+                  ),
+              ],
             ],
           ),
           if (status.toLowerCase() != 'completed' && status.toLowerCase() != 'cancelled') ...[
@@ -1009,30 +1053,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Expanded(child: _buildSubTabButton('Services', 'Dịch vụ', _configSubTab == 'Services', () => setState(() => _configSubTab = 'Services'))),
               Expanded(child: _buildSubTabButton('TimeSlots', 'Khung giờ', _configSubTab == 'TimeSlots', () => setState(() => _configSubTab = 'TimeSlots'))),
               Expanded(child: _buildSubTabButton('Rewards', 'Quà tặng', _configSubTab == 'Rewards', () => setState(() => _configSubTab = 'Rewards'))),
+              Expanded(child: _buildSubTabButton('Reviews', 'Đánh giá', _configSubTab == 'Reviews', () => setState(() => _configSubTab = 'Reviews'))),
             ],
           ),
         ),
         const SizedBox(height: 16),
 
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _configSubTab == 'Services' ? 'GÓI DỊCH VỤ' : (_configSubTab == 'TimeSlots' ? 'LỊCH LÀM VIỆC' : 'QUÀ TẶNG ĐỔI ĐIỂM'),
-              style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 0.5),
-            ),
-            ElevatedButton.icon(
-              onPressed: _handleAddNewConfig,
-              icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-              label: Text('Thêm mới', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        if (_configSubTab != 'Reviews')
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _configSubTab == 'Services' ? 'GÓI DỊCH VỤ' : (_configSubTab == 'TimeSlots' ? 'LỊCH LÀM VIỆC' : 'QUÀ TẶNG ĐỔI ĐIỂM'),
+                style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 0.5),
               ),
-            ),
-          ],
-        ),
+              ElevatedButton.icon(
+                onPressed: _handleAddNewConfig,
+                icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                label: Text('Thêm mới', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
+          ),
         const SizedBox(height: 16),
 
         if (_configSubTab == 'TimeSlots') ...[
@@ -1078,14 +1124,87 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         itemCount: filteredSlots.length,
         itemBuilder: (context, index) => _buildTimeSlotConfigCard(filteredSlots[index]),
       );
-    } else {
+    } else if (_configSubTab == 'Rewards') {
       return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _rewards.length,
         itemBuilder: (context, index) => _buildRewardConfigCard(_rewards[index]),
       );
+    } else {
+      return _buildAdminReviewsList();
     }
+  }
+
+  Widget _buildAdminReviewsList() {
+    if (_adminReviews.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Text('Chưa có đánh giá nào', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('TẤT CẢ ĐÁNH GIÁ (${_adminReviews.length})', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 0.5)),
+        const SizedBox(height: 12),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _adminReviews.length,
+          itemBuilder: (context, index) {
+            final review = _adminReviews[index];
+            final int rating = review['rating'] ?? 0;
+            DateTime? dt;
+            if (review['createdAt'] != null) dt = DateTime.tryParse(review['createdAt'].toString());
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(review['customerName'] ?? '', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                            Text(review['serviceName'] ?? '', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: List.generate(5, (i) => Icon(
+                          i < rating ? Icons.star_rounded : Icons.star_border_rounded,
+                          color: Colors.amber,
+                          size: 16,
+                        )),
+                      ),
+                    ],
+                  ),
+                  if (review['comment'] != null && review['comment'].toString().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(review['comment'], style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textPrimary, height: 1.4)),
+                  ],
+                  if (dt != null) ...[
+                    const SizedBox(height: 6),
+                    Text(DateFormat('dd/MM/yyyy HH:mm').format(dt), style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.textMuted)),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
   }
 
   void _handleAddNewConfig() {
@@ -1629,6 +1748,61 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  void _showAssignStaffDialog(String bookingId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Phân công nhân viên', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: _staffList.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text('Chưa có nhân viên nào', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _staffList.length,
+                  itemBuilder: (context, index) {
+                    final staff = _staffList[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppTheme.primaryBlue.withAlpha(20),
+                        child: Text(
+                          (staff['fullName'] ?? 'S')[0].toUpperCase(),
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                        ),
+                      ),
+                      title: Text(staff['fullName'] ?? '', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                      subtitle: Text(staff['phone'] ?? '', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _assignStaff(bookingId, staff['id']);
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _assignStaff(String bookingId, String staffId) async {
+    setState(() => _isLoading = true);
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.apiService.assignStaffToBooking(bookingId, staffId);
+      await _loadAllData();
+      _showSnackbar('Phân công nhân viên thành công!', AppTheme.success);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showSnackbar('Lỗi: $e', AppTheme.error);
+    }
+  }
+
   Widget _buildFilterTab(String filterValue, String label) {
     final isSelected = _selectedStatusFilter == filterValue;
     return GestureDetector(
@@ -1667,6 +1841,561 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       child: Text(label, style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
     );
+  }
+
+  // ==================== TAB 3: CHEMICALS ====================
+  Widget _buildChemicalsTab() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Sub-tabs
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          child: Row(
+            children: [
+              Expanded(child: _buildSubTabButton('Inventory', 'Kho hàng', _chemicalSubTab == 'Inventory', () => setState(() => _chemicalSubTab = 'Inventory'))),
+              Expanded(child: _buildSubTabButton('LowStock', 'Sắp hết', _chemicalSubTab == 'LowStock', () => setState(() => _chemicalSubTab = 'LowStock'))),
+              Expanded(child: _buildSubTabButton('ServiceMap', 'Dịch vụ', _chemicalSubTab == 'ServiceMap', () => setState(() => _chemicalSubTab = 'ServiceMap'))),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        if (_chemicalSubTab == 'Inventory' || _chemicalSubTab == 'LowStock') ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _chemicalSubTab == 'Inventory' ? 'TẤT CẢ HÓA CHẤT' : 'HÓA CHẤT SẮP HẾT',
+                style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 0.5),
+              ),
+              if (_chemicalSubTab == 'Inventory')
+                ElevatedButton.icon(
+                  onPressed: _showCreateChemicalDialog,
+                  icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                  label: Text('Thêm mới', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildChemicalList(),
+        ],
+
+        if (_chemicalSubTab == 'ServiceMap') ...[
+          Text('LIÊN KẾT HÓA CHẤT - DỊCH VỤ', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary, letterSpacing: 0.5)),
+          const SizedBox(height: 12),
+          _buildServiceChemicalMapping(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildChemicalList() {
+    final list = _chemicalSubTab == 'LowStock'
+        ? _chemicals.where((c) => c['isLowStock'] == true).toList()
+        : _chemicals;
+
+    if (list.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Text(
+          _chemicalSubTab == 'LowStock' ? 'Không có hóa chất nào sắp hết' : 'Chưa có hóa chất nào',
+          style: GoogleFonts.outfit(color: AppTheme.textSecondary),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final c = list[index];
+        final bool isLow = c['isLowStock'] == true;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: isLow ? Border.all(color: AppTheme.error.withAlpha(40), width: 1.5) : null,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (isLow ? AppTheme.error : Colors.teal).withAlpha(15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.science_rounded, color: isLow ? AppTheme.error : Colors.teal, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(c['name'] ?? '', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                        if (isLow) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: AppTheme.error.withAlpha(20), borderRadius: BorderRadius.circular(4)),
+                            child: Text('SẮP HẾT', style: GoogleFonts.outfit(fontSize: 8, fontWeight: FontWeight.w900, color: AppTheme.error)),
+                          ),
+                        ]
+                      ],
+                    ),
+                    Text('Tồn kho: ${_formatStock(c['currentStock'])} ${c['unit']} • Tối thiểu: ${_formatStock(c['minimumStock'])} ${c['unit']}',
+                        style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.textSecondary)),
+                  ],
+                ),
+              ),
+              IconButton(icon: const Icon(Icons.edit_rounded, color: AppTheme.primaryBlue, size: 16), onPressed: () => _showEditChemicalDialog(c)),
+              IconButton(icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.teal, size: 16), onPressed: () => _showRestockDialog(c['id'])),
+              IconButton(icon: const Icon(Icons.history_rounded, color: Colors.blueGrey, size: 16), onPressed: () => _showChemicalLogsDialog(c['id'], c['name'] ?? '')),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatStock(dynamic val) {
+    if (val == null) return '0';
+    final d = double.tryParse(val.toString()) ?? 0;
+    return d == d.truncateToDouble() ? d.toInt().toString() : d.toStringAsFixed(1);
+  }
+
+  Widget _buildServiceChemicalMapping() {
+    if (_services.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Text('Chưa có dịch vụ nào', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _services.length,
+      itemBuilder: (context, index) {
+        final svc = _services[index];
+        final serviceId = svc['id'];
+        final serviceName = svc['name'] ?? '';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(serviceName, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                  GestureDetector(
+                    onTap: () => _showAddServiceChemicalDialog(serviceId),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: AppTheme.primaryBlue.withAlpha(15), borderRadius: BorderRadius.circular(6)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.add_rounded, size: 14, color: AppTheme.primaryBlue),
+                          const SizedBox(width: 2),
+                          Text('Thêm', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              FutureBuilder<Map<String, dynamic>>(
+                future: Provider.of<AuthProvider>(context, listen: false).apiService.getServiceChemicals(serviceId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(padding: EdgeInsets.all(8), child: Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))));
+                  }
+                  if (!snapshot.hasData || snapshot.data!['data'] == null || (snapshot.data!['data'] as List).isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 4),
+                      child: Text('Chưa có hóa chất nào', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted)),
+                    );
+                  }
+                  final scList = snapshot.data!['data'] as List;
+                  return Column(
+                    children: scList.map<Widget>((sc) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.circle, size: 6, color: Colors.teal),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text('${sc['chemicalName']} - ${_formatStock(sc['quantityPerWash'])} ${sc['unit']}/lần rửa',
+                                  style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
+                            ),
+                            GestureDetector(
+                              onTap: () => _showEditServiceChemicalDialog(sc),
+                              child: const Icon(Icons.edit_rounded, size: 14, color: AppTheme.primaryBlue),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _deleteServiceChemical(sc['id']),
+                              child: const Icon(Icons.delete_outline_rounded, size: 14, color: AppTheme.error),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ==================== CHEMICAL DIALOGS ====================
+  void _showCreateChemicalDialog() {
+    final nameCtrl = TextEditingController();
+    final unitCtrl = TextEditingController();
+    final stockCtrl = TextEditingController();
+    final minCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Thêm hóa chất mới', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Tên hóa chất'), validator: (v) => v == null || v.trim().isEmpty ? 'Nhập tên' : null),
+                TextFormField(controller: unitCtrl, decoration: const InputDecoration(labelText: 'Đơn vị (lít, ml, kg...)'), validator: (v) => v == null || v.trim().isEmpty ? 'Nhập đơn vị' : null),
+                TextFormField(controller: stockCtrl, decoration: const InputDecoration(labelText: 'Số lượng hiện có'), keyboardType: TextInputType.number, validator: (v) => v == null || double.tryParse(v) == null ? 'Nhập số hợp lệ' : null),
+                TextFormField(controller: minCtrl, decoration: const InputDecoration(labelText: 'Mức tối thiểu'), keyboardType: TextInputType.number, validator: (v) => v == null || double.tryParse(v) == null ? 'Nhập số hợp lệ' : null),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+          ElevatedButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(ctx);
+              setState(() => _isLoading = true);
+              try {
+                final api = Provider.of<AuthProvider>(context, listen: false).apiService;
+                await api.createChemical(nameCtrl.text.trim(), unitCtrl.text.trim(), double.parse(stockCtrl.text), double.parse(minCtrl.text));
+                await _loadAllData();
+                _showSnackbar('Thêm hóa chất thành công!', AppTheme.success);
+              } catch (e) {
+                setState(() => _isLoading = false);
+                _showSnackbar('Lỗi: $e', AppTheme.error);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
+            child: const Text('Tạo', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditChemicalDialog(dynamic chemical) {
+    final nameCtrl = TextEditingController(text: chemical['name']);
+    final unitCtrl = TextEditingController(text: chemical['unit']);
+    final minCtrl = TextEditingController(text: chemical['minimumStock']?.toString());
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Cập nhật hóa chất', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Tên hóa chất'), validator: (v) => v == null || v.trim().isEmpty ? 'Nhập tên' : null),
+              TextFormField(controller: unitCtrl, decoration: const InputDecoration(labelText: 'Đơn vị'), validator: (v) => v == null || v.trim().isEmpty ? 'Nhập đơn vị' : null),
+              TextFormField(controller: minCtrl, decoration: const InputDecoration(labelText: 'Mức tối thiểu'), keyboardType: TextInputType.number, validator: (v) => v == null || double.tryParse(v) == null ? 'Nhập số hợp lệ' : null),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+          ElevatedButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(ctx);
+              setState(() => _isLoading = true);
+              try {
+                final api = Provider.of<AuthProvider>(context, listen: false).apiService;
+                await api.updateChemical(chemical['id'], nameCtrl.text.trim(), unitCtrl.text.trim(), double.parse(minCtrl.text));
+                await _loadAllData();
+                _showSnackbar('Cập nhật hóa chất thành công!', AppTheme.success);
+              } catch (e) {
+                setState(() => _isLoading = false);
+                _showSnackbar('Lỗi: $e', AppTheme.error);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
+            child: const Text('Lưu', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRestockDialog(String chemicalId) {
+    final amountCtrl = TextEditingController();
+    final reasonCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Nhập thêm hóa chất', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(controller: amountCtrl, decoration: const InputDecoration(labelText: 'Số lượng nhập'), keyboardType: TextInputType.number, validator: (v) => v == null || (double.tryParse(v) ?? 0) <= 0 ? 'Phải > 0' : null),
+              TextFormField(controller: reasonCtrl, decoration: const InputDecoration(labelText: 'Lý do (tùy chọn)')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+          ElevatedButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(ctx);
+              setState(() => _isLoading = true);
+              try {
+                final api = Provider.of<AuthProvider>(context, listen: false).apiService;
+                await api.restockChemical(chemicalId, double.parse(amountCtrl.text), reasonCtrl.text.trim().isEmpty ? null : reasonCtrl.text.trim());
+                await _loadAllData();
+                _showSnackbar('Nhập thêm hóa chất thành công!', AppTheme.success);
+              } catch (e) {
+                setState(() => _isLoading = false);
+                _showSnackbar('Lỗi: $e', AppTheme.error);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+            child: const Text('Nhập kho', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChemicalLogsDialog(String chemicalId, String chemicalName) async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Lịch sử: $chemicalName', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: Provider.of<AuthProvider>(context, listen: false).apiService.getChemicalLogs(chemicalId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue));
+              }
+              if (!snapshot.hasData || snapshot.data!['data'] == null || (snapshot.data!['data'] as List).isEmpty) {
+                return Center(child: Text('Chưa có lịch sử', style: GoogleFonts.outfit(color: AppTheme.textSecondary)));
+              }
+              final logs = snapshot.data!['data'] as List;
+              return ListView.builder(
+                itemCount: logs.length,
+                itemBuilder: (context, index) {
+                  final log = logs[index];
+                  final amount = (log['changeAmount'] ?? 0).toDouble();
+                  final isPositive = amount > 0;
+                  DateTime? dt;
+                  if (log['createdAt'] != null) dt = DateTime.tryParse(log['createdAt'].toString());
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: (isPositive ? Colors.teal : AppTheme.error).withAlpha(8),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: (isPositive ? Colors.teal : AppTheme.error).withAlpha(30)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                          size: 16,
+                          color: isPositive ? Colors.teal : AppTheme.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${isPositive ? '+' : ''}${_formatStock(amount)}',
+                                style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: isPositive ? Colors.teal : AppTheme.error),
+                              ),
+                              Text(log['reason'] ?? '', style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.textSecondary)),
+                            ],
+                          ),
+                        ),
+                        if (dt != null) Text(DateFormat('dd/MM HH:mm').format(dt), style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.textMuted)),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng')),
+        ],
+      ),
+    );
+  }
+
+  void _showAddServiceChemicalDialog(String serviceId) {
+    String? selectedChemicalId;
+    final qtyCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Thêm hóa chất cho dịch vụ', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: 'Chọn hóa chất'),
+                  value: selectedChemicalId,
+                  items: _chemicals.map<DropdownMenuItem<String>>((c) {
+                    return DropdownMenuItem(value: c['id'] as String, child: Text('${c['name']} (${c['unit']})'));
+                  }).toList(),
+                  onChanged: (v) => setDialogState(() => selectedChemicalId = v),
+                  validator: (v) => v == null ? 'Chọn hóa chất' : null,
+                ),
+                TextFormField(controller: qtyCtrl, decoration: const InputDecoration(labelText: 'Lượng dùng mỗi lần rửa'), keyboardType: TextInputType.number, validator: (v) => v == null || (double.tryParse(v) ?? 0) <= 0 ? 'Phải > 0' : null),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+            ElevatedButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                Navigator.pop(ctx);
+                setState(() => _isLoading = true);
+                try {
+                  final api = Provider.of<AuthProvider>(context, listen: false).apiService;
+                  await api.addServiceChemical(serviceId, selectedChemicalId!, double.parse(qtyCtrl.text));
+                  await _loadAllData();
+                  _showSnackbar('Gán hóa chất cho dịch vụ thành công!', AppTheme.success);
+                } catch (e) {
+                  setState(() => _isLoading = false);
+                  _showSnackbar('Lỗi: $e', AppTheme.error);
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
+              child: const Text('Thêm', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditServiceChemicalDialog(dynamic sc) {
+    final qtyCtrl = TextEditingController(text: sc['quantityPerWash']?.toString());
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Cập nhật lượng hóa chất', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Hóa chất: ${sc['chemicalName']}', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+              const SizedBox(height: 8),
+              TextFormField(controller: qtyCtrl, decoration: const InputDecoration(labelText: 'Lượng dùng mỗi lần rửa'), keyboardType: TextInputType.number, validator: (v) => v == null || (double.tryParse(v) ?? 0) <= 0 ? 'Phải > 0' : null),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+          ElevatedButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(ctx);
+              setState(() => _isLoading = true);
+              try {
+                final api = Provider.of<AuthProvider>(context, listen: false).apiService;
+                await api.updateServiceChemical(sc['id'], double.parse(qtyCtrl.text));
+                await _loadAllData();
+                _showSnackbar('Cập nhật thành công!', AppTheme.success);
+              } catch (e) {
+                setState(() => _isLoading = false);
+                _showSnackbar('Lỗi: $e', AppTheme.error);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
+            child: const Text('Lưu', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteServiceChemical(String id) async {
+    setState(() => _isLoading = true);
+    try {
+      final api = Provider.of<AuthProvider>(context, listen: false).apiService;
+      await api.deleteServiceChemical(id);
+      await _loadAllData();
+      _showSnackbar('Xóa liên kết hóa chất thành công!', AppTheme.success);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showSnackbar('Lỗi: $e', AppTheme.error);
+    }
   }
 
   List<DateTime> _generateCalendarDays() {
