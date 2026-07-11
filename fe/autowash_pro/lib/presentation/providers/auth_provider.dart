@@ -15,7 +15,8 @@ class AuthProvider with ChangeNotifier {
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null;
-  bool get isAdmin => _user?.role == 'Admin';
+  bool get isAdmin => _user?.role == 'Admin' || _user?.role == '1';
+  bool get isStaff => _user?.role == 'Staff' || _user?.role == '2';
   String? get error => _error;
 
   Future<void> checkAuth() async {

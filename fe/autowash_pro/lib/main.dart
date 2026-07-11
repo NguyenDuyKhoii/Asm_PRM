@@ -8,6 +8,7 @@ import 'package:autowash_pro/presentation/providers/loyalty_provider.dart';
 import 'package:autowash_pro/presentation/screens/auth/login_screen.dart';
 import 'package:autowash_pro/presentation/screens/home/home_screen.dart';
 import 'package:autowash_pro/presentation/screens/admin/admin_dashboard_screen.dart';
+import 'package:autowash_pro/presentation/screens/staff/staff_dashboard_screen.dart';
 
 void main() {
   runApp(const AutoWashProApp());
@@ -66,9 +67,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => authProvider.isLoggedIn 
-                  ? (authProvider.isAdmin ? const AdminDashboardScreen() : const HomeScreen())
-                  : const LoginScreen(),
+              builder: (_) {
+                if (!authProvider.isLoggedIn) return const LoginScreen();
+                if (authProvider.isAdmin) return const AdminDashboardScreen();
+                if (authProvider.isStaff) return const StaffDashboardScreen();
+                return const HomeScreen();
+              },
             ),
           );
         }

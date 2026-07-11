@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
+import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
 
 class MyBookingsScreen extends StatefulWidget {
@@ -284,6 +285,26 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                             ),
                                           ],
                                         ),
+
+                                        // Review button for completed bookings
+                                        if (booking.status.toLowerCase() == 'completed') ...[
+                                          const SizedBox(height: 12),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () => _showReviewDialog(context, booking),
+                                              icon: const Icon(Icons.star_rounded, size: 16),
+                                              label: Text('Đánh giá', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13)),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.amber.shade600,
+                                                foregroundColor: Colors.white,
+                                                elevation: 0,
+                                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
@@ -301,6 +322,128 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showReviewDialog(BuildContext context, dynamic booking) async {
+    final apiService = Provider.of<AuthProvider>(context, listen: false).apiService;
+
+    // Check if review already exists
+    try {
+      final existingRes = await apiService.getBookingReview(booking.id);
+      if (existingRes['data'] != null && context.mounted) {
+        // Show read-only review
+        final review = existingRes['data'];
+        final int rating = review['rating'] ?? 0;
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('Đánh giá của bạn', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (i) => Icon(
+                    i < rating ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: Colors.amber,
+                    size: 32,
+                  )),
+                ),
+                const SizedBox(height: 12),
+                if (review['comment'] != null && review['comment'].toString().isNotEmpty)
+                  Text(review['comment'], style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textPrimary), textAlign: TextAlign.center),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng')),
+            ],
+          ),
+        );
+        return;
+      }
+    } catch (_) {
+      // No review exists, show create form
+    }
+
+    if (!context.mounted) return;
+
+    int selectedRating = 5;
+    final commentCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Đánh giá dịch vụ', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(booking.serviceName, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (i) => GestureDetector(
+                  onTap: () => setDialogState(() => selectedRating = i + 1),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      i < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
+                      color: Colors.amber,
+                      size: 36,
+                    ),
+                  ),
+                )),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: commentCtrl,
+                decoration: InputDecoration(
+                  hintText: 'Nhận xét (tùy chọn)',
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  await apiService.createReview(booking.id, selectedRating, commentCtrl.text.trim().isEmpty ? null : commentCtrl.text.trim());
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Đánh giá thành công!', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                        backgroundColor: AppTheme.success,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Lỗi: $e', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                        backgroundColor: AppTheme.error,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.amber.shade600),
+              child: const Text('Gửi đánh giá', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
       ),
     );
   }

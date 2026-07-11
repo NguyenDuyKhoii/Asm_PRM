@@ -8,6 +8,7 @@ import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/screens/auth/register_screen.dart';
 import 'package:autowash_pro/presentation/screens/home/home_screen.dart';
 import 'package:autowash_pro/presentation/screens/admin/admin_dashboard_screen.dart';
+import 'package:autowash_pro/presentation/screens/staff/staff_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,9 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => authProvider.isAdmin 
-              ? const AdminDashboardScreen() 
-              : const HomeScreen(),
+          builder: (_) {
+            if (authProvider.isAdmin) return const AdminDashboardScreen();
+            if (authProvider.isStaff) return const StaffDashboardScreen();
+            return const HomeScreen();
+          }
         ),
       );
     }

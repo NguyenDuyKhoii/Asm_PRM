@@ -86,6 +86,12 @@ public class AdminController : ControllerBase
                 .ThenBy(b => b.TimeSlot.StartTime)
                 .ToListAsync();
 
+            // Load staff names for bookings that have staff assigned
+            var staffIds = rawBookings.Where(b => b.StaffId != null).Select(b => b.StaffId!.Value).Distinct().ToList();
+            var staffNames = await _context.Users
+                .Where(u => staffIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.FullName);
+
             var bookingsList = rawBookings.Select(b => new AdminBookingDTO
             {
                 Id = b.Id,
@@ -97,7 +103,9 @@ public class AdminController : ControllerBase
                 TimeSlotDisplay = $"{b.TimeSlot.StartTime:hh\\:mm} - {b.TimeSlot.EndTime:hh\\:mm}",
                 TotalPrice = b.TotalPrice,
                 Status = b.Status.ToString(),
-                QrCode = b.QrCode
+                QrCode = b.QrCode,
+                StaffId = b.StaffId,
+                StaffName = b.StaffId != null && staffNames.ContainsKey(b.StaffId.Value) ? staffNames[b.StaffId.Value] : null
             }).ToList();
 
             return Ok(ApiResponse<List<AdminBookingDTO>>.SuccessResponse(bookingsList));
@@ -136,6 +144,9 @@ public class AdminController : ControllerBase
                     booking.User.LoyaltyPoints += pointsEarned;
                     booking.User.UpdateTier();
                 }
+
+                // Auto-deduct chemicals
+                await DeductChemicalsForBooking(booking);
             }
 
             booking.Status = newStatus;
@@ -146,6 +157,59 @@ public class AdminController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    // ==================== ASSIGN STAFF ====================
+    [HttpPut("bookings/{id}/assign-staff")]
+    public async Task<IActionResult> AssignStaff(Guid id, [FromBody] AssignStaffDTO dto)
+    {
+        try
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy booking."));
+
+            if (booking.StaffId != null)
+                return BadRequest(ApiResponse<bool>.ErrorResponse("Booking này đã được gán nhân viên."));
+
+            var staff = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.StaffId && u.Role == UserRole.Staff);
+            if (staff == null)
+                return BadRequest(ApiResponse<bool>.ErrorResponse("Không tìm thấy nhân viên hợp lệ."));
+
+            booking.StaffId = dto.StaffId;
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Gán nhân viên thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpGet("staff")]
+    public async Task<IActionResult> GetStaffList()
+    {
+        try
+        {
+            var staffList = await _context.Users
+                .Where(u => u.Role == UserRole.Staff)
+                .OrderBy(u => u.FullName)
+                .Select(u => new StaffListDTO
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    Phone = u.Phone
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<StaffListDTO>>.SuccessResponse(staffList));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<List<StaffListDTO>>.ErrorResponse(ex.Message));
         }
     }
 
@@ -545,6 +609,335 @@ public class AdminController : ControllerBase
             return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
         }
     }
+
+    // ==================== CHEMICALS ====================
+    [HttpGet("chemicals")]
+    public async Task<IActionResult> GetChemicals()
+    {
+        try
+        {
+            var chemicals = await _context.Chemicals
+                .OrderBy(c => c.Name)
+                .Select(c => new ChemicalDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Unit = c.Unit,
+                    CurrentStock = c.CurrentStock,
+                    MinimumStock = c.MinimumStock,
+                    IsLowStock = c.CurrentStock <= c.MinimumStock,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<ChemicalDTO>>.SuccessResponse(chemicals));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<List<ChemicalDTO>>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpPost("chemicals")]
+    public async Task<IActionResult> CreateChemical([FromBody] CreateChemicalDTO dto)
+    {
+        try
+        {
+            var chemical = new Chemical
+            {
+                Name = dto.Name,
+                Unit = dto.Unit,
+                CurrentStock = dto.CurrentStock,
+                MinimumStock = dto.MinimumStock,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Chemicals.Add(chemical);
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Thêm hóa chất thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpPut("chemicals/{id}")]
+    public async Task<IActionResult> UpdateChemical(Guid id, [FromBody] UpdateChemicalDTO dto)
+    {
+        try
+        {
+            var chemical = await _context.Chemicals.FindAsync(id);
+            if (chemical == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy hóa chất."));
+
+            chemical.Name = dto.Name;
+            chemical.Unit = dto.Unit;
+            chemical.MinimumStock = dto.MinimumStock;
+            chemical.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Cập nhật hóa chất thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpPost("chemicals/{id}/restock")]
+    public async Task<IActionResult> RestockChemical(Guid id, [FromBody] RestockChemicalDTO dto)
+    {
+        try
+        {
+            var chemical = await _context.Chemicals.FindAsync(id);
+            if (chemical == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy hóa chất."));
+
+            if (dto.Amount <= 0)
+                return BadRequest(ApiResponse<bool>.ErrorResponse("Số lượng nhập phải lớn hơn 0."));
+
+            chemical.CurrentStock += dto.Amount;
+            chemical.UpdatedAt = DateTime.UtcNow;
+
+            _context.ChemicalLogs.Add(new ChemicalLog
+            {
+                ChemicalId = id,
+                ChangeAmount = dto.Amount,
+                Reason = dto.Reason ?? "Nhập thêm hàng",
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Nhập thêm hóa chất thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpGet("chemicals/{id}/logs")]
+    public async Task<IActionResult> GetChemicalLogs(Guid id)
+    {
+        try
+        {
+            var chemical = await _context.Chemicals.FindAsync(id);
+            if (chemical == null)
+                return NotFound(ApiResponse<object>.ErrorResponse("Không tìm thấy hóa chất."));
+
+            var logs = await _context.ChemicalLogs
+                .Where(l => l.ChemicalId == id)
+                .OrderByDescending(l => l.CreatedAt)
+                .Select(l => new ChemicalLogDTO
+                {
+                    Id = l.Id,
+                    ChangeAmount = l.ChangeAmount,
+                    Reason = l.Reason,
+                    BookingId = l.BookingId,
+                    CreatedAt = l.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<ChemicalLogDTO>>.SuccessResponse(logs));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<List<ChemicalLogDTO>>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpGet("chemicals/low-stock")]
+    public async Task<IActionResult> GetLowStockChemicals()
+    {
+        try
+        {
+            var lowStock = await _context.Chemicals
+                .Where(c => c.CurrentStock <= c.MinimumStock)
+                .OrderBy(c => c.CurrentStock)
+                .Select(c => new ChemicalDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Unit = c.Unit,
+                    CurrentStock = c.CurrentStock,
+                    MinimumStock = c.MinimumStock,
+                    IsLowStock = true,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<ChemicalDTO>>.SuccessResponse(lowStock));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<List<ChemicalDTO>>.ErrorResponse(ex.Message));
+        }
+    }
+
+    // ==================== SERVICE CHEMICALS ====================
+    [HttpGet("services/{serviceId}/chemicals")]
+    public async Task<IActionResult> GetServiceChemicals(Guid serviceId)
+    {
+        try
+        {
+            var serviceChemicals = await _context.ServiceChemicals
+                .Include(sc => sc.Chemical)
+                .Where(sc => sc.ServiceId == serviceId)
+                .Select(sc => new ServiceChemicalDTO
+                {
+                    Id = sc.Id,
+                    ServiceId = sc.ServiceId,
+                    ChemicalId = sc.ChemicalId,
+                    ChemicalName = sc.Chemical.Name,
+                    Unit = sc.Chemical.Unit,
+                    QuantityPerWash = sc.QuantityPerWash
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<ServiceChemicalDTO>>.SuccessResponse(serviceChemicals));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<List<ServiceChemicalDTO>>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpPost("services/{serviceId}/chemicals")]
+    public async Task<IActionResult> AddServiceChemical(Guid serviceId, [FromBody] AddServiceChemicalDTO dto)
+    {
+        try
+        {
+            var service = await _context.Services.FindAsync(serviceId);
+            if (service == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy dịch vụ."));
+
+            var chemical = await _context.Chemicals.FindAsync(dto.ChemicalId);
+            if (chemical == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy hóa chất."));
+
+            var exists = await _context.ServiceChemicals.AnyAsync(sc => sc.ServiceId == serviceId && sc.ChemicalId == dto.ChemicalId);
+            if (exists)
+                return BadRequest(ApiResponse<bool>.ErrorResponse("Hóa chất này đã được gán cho dịch vụ."));
+
+            var serviceChemical = new ServiceChemical
+            {
+                ServiceId = serviceId,
+                ChemicalId = dto.ChemicalId,
+                QuantityPerWash = dto.QuantityPerWash
+            };
+
+            _context.ServiceChemicals.Add(serviceChemical);
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Gán hóa chất cho dịch vụ thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpPut("service-chemicals/{id}")]
+    public async Task<IActionResult> UpdateServiceChemical(Guid id, [FromBody] UpdateServiceChemicalDTO dto)
+    {
+        try
+        {
+            var serviceChemical = await _context.ServiceChemicals.FindAsync(id);
+            if (serviceChemical == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy liên kết hóa chất - dịch vụ."));
+
+            serviceChemical.QuantityPerWash = dto.QuantityPerWash;
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Cập nhật lượng hóa chất thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    [HttpDelete("service-chemicals/{id}")]
+    public async Task<IActionResult> DeleteServiceChemical(Guid id)
+    {
+        try
+        {
+            var serviceChemical = await _context.ServiceChemicals.FindAsync(id);
+            if (serviceChemical == null)
+                return NotFound(ApiResponse<bool>.ErrorResponse("Không tìm thấy liên kết hóa chất - dịch vụ."));
+
+            _context.ServiceChemicals.Remove(serviceChemical);
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Xóa liên kết hóa chất thành công!"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<bool>.ErrorResponse(ex.Message));
+        }
+    }
+
+    // ==================== REVIEWS ====================
+    [HttpGet("reviews")]
+    public async Task<IActionResult> GetAllReviews()
+    {
+        try
+        {
+            var reviews = await _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Booking)
+                    .ThenInclude(b => b.Service)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new AdminReviewDTO
+                {
+                    Id = r.Id,
+                    BookingId = r.BookingId,
+                    CustomerName = r.User.FullName,
+                    ServiceName = r.Booking.Service.Name,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(ApiResponse<List<AdminReviewDTO>>.SuccessResponse(reviews));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<List<AdminReviewDTO>>.ErrorResponse(ex.Message));
+        }
+    }
+
+    // ==================== HELPER METHODS ====================
+    private async Task DeductChemicalsForBooking(Booking booking)
+    {
+        var serviceChemicals = await _context.ServiceChemicals
+            .Include(sc => sc.Chemical)
+            .Where(sc => sc.ServiceId == booking.ServiceId)
+            .ToListAsync();
+
+        foreach (var sc in serviceChemicals)
+        {
+            sc.Chemical.CurrentStock -= sc.QuantityPerWash;
+            sc.Chemical.UpdatedAt = DateTime.UtcNow;
+
+            _context.ChemicalLogs.Add(new ChemicalLog
+            {
+                ChemicalId = sc.ChemicalId,
+                ChangeAmount = -sc.QuantityPerWash,
+                Reason = "Tự động trừ khi hoàn thành booking",
+                BookingId = booking.Id,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+    }
 }
 
 // ==================== DTOS ====================
@@ -568,6 +961,8 @@ public class AdminBookingDTO
     public decimal TotalPrice { get; set; }
     public string Status { get; set; } = string.Empty;
     public string QrCode { get; set; } = string.Empty;
+    public Guid? StaffId { get; set; }
+    public string? StaffName { get; set; }
 }
 
 public class UpdateBookingStatusDTO
@@ -659,4 +1054,91 @@ public class UpdateRewardDTO
     public decimal DiscountValue { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; }
+}
+
+public class AssignStaffDTO
+{
+    public Guid StaffId { get; set; }
+}
+
+public class StaffListDTO
+{
+    public Guid Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+}
+
+public class ChemicalDTO
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public decimal CurrentStock { get; set; }
+    public decimal MinimumStock { get; set; }
+    public bool IsLowStock { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class CreateChemicalDTO
+{
+    public string Name { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public decimal CurrentStock { get; set; }
+    public decimal MinimumStock { get; set; }
+}
+
+public class UpdateChemicalDTO
+{
+    public string Name { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public decimal MinimumStock { get; set; }
+}
+
+public class RestockChemicalDTO
+{
+    public decimal Amount { get; set; }
+    public string? Reason { get; set; }
+}
+
+public class ChemicalLogDTO
+{
+    public Guid Id { get; set; }
+    public decimal ChangeAmount { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public Guid? BookingId { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class ServiceChemicalDTO
+{
+    public Guid Id { get; set; }
+    public Guid ServiceId { get; set; }
+    public Guid ChemicalId { get; set; }
+    public string ChemicalName { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public decimal QuantityPerWash { get; set; }
+}
+
+public class AddServiceChemicalDTO
+{
+    public Guid ChemicalId { get; set; }
+    public decimal QuantityPerWash { get; set; }
+}
+
+public class UpdateServiceChemicalDTO
+{
+    public decimal QuantityPerWash { get; set; }
+}
+
+public class AdminReviewDTO
+{
+    public Guid Id { get; set; }
+    public Guid BookingId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string ServiceName { get; set; } = string.Empty;
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

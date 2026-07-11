@@ -90,9 +90,60 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  Future<Map<String, dynamic>> getMyBookings() async {
+    Future<Map<String, dynamic>> getMyBookings() async {
     final response = await http.get(
       Uri.parse(ApiConstants.myBookings),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getTodayBookings() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/today'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateStaffBookingStatus(String id, int newStatus) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/status'),
+      headers: _headers,
+      body: jsonEncode(newStatus),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> claimBooking(String id) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/claim'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateChecklist(String id, Map<String, dynamic> checklist) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/checklist'),
+      headers: _headers,
+      body: jsonEncode(jsonEncode(checklist)), // backend expects a string body which is JSON itself
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> completeBooking(String id, String imageUrl) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/$id/complete'),
+      headers: _headers,
+      body: jsonEncode(imageUrl),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getStaffStats() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/bookings/staff-stats'),
       headers: _headers,
     );
     return _handleResponse(response);
@@ -351,6 +402,23 @@ class ApiService {
   }
 
   // ==================== ADMIN STAFF ====================
+  Future<Map<String, dynamic>> getStaffList() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminStaff),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> assignStaffToBooking(String bookingId, String staffId) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminBookings}/$bookingId/assign-staff'),
+      headers: _headers,
+      body: jsonEncode({'staffId': staffId}),
+    );
+    return _handleResponse(response);
+  }
+
   Future<Map<String, dynamic>> createStaffAccount(String fullName, String email, String password, String phone) async {
     final response = await http.post(
       Uri.parse(ApiConstants.adminStaff),
@@ -361,6 +429,147 @@ class ApiService {
         'password': password,
         'phone': phone,
       }),
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== CHEMICALS ====================
+  Future<Map<String, dynamic>> getChemicals() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminChemicals),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> createChemical(String name, String unit, double currentStock, double minimumStock) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.adminChemicals),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'unit': unit,
+        'currentStock': currentStock,
+        'minimumStock': minimumStock,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateChemical(String id, String name, String unit, double minimumStock) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminChemicals}/$id'),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name,
+        'unit': unit,
+        'minimumStock': minimumStock,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> restockChemical(String id, double amount, String? reason) async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.adminChemicals}/$id/restock'),
+      headers: _headers,
+      body: jsonEncode({
+        'amount': amount,
+        'reason': reason,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getChemicalLogs(String id) async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.adminChemicals}/$id/logs'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getLowStockChemicals() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.adminChemicals}/low-stock'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== SERVICE CHEMICALS ====================
+  Future<Map<String, dynamic>> getServiceChemicals(String serviceId) async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/admin/services/$serviceId/chemicals'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> addServiceChemical(String serviceId, String chemicalId, double quantityPerWash) async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}/admin/services/$serviceId/chemicals'),
+      headers: _headers,
+      body: jsonEncode({
+        'chemicalId': chemicalId,
+        'quantityPerWash': quantityPerWash,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> updateServiceChemical(String id, double quantityPerWash) async {
+    final response = await http.put(
+      Uri.parse('${ApiConstants.adminServiceChemicals}/$id'),
+      headers: _headers,
+      body: jsonEncode({
+        'quantityPerWash': quantityPerWash,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> deleteServiceChemical(String id) async {
+    final response = await http.delete(
+      Uri.parse('${ApiConstants.adminServiceChemicals}/$id'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // ==================== REVIEWS ====================
+  Future<Map<String, dynamic>> createReview(String bookingId, int rating, String? comment) async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.createBooking}/$bookingId/review'),
+      headers: _headers,
+      body: jsonEncode({
+        'rating': rating,
+        'comment': comment,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getBookingReview(String bookingId) async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.createBooking}/$bookingId/review'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getServiceReviews(String serviceId) async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/reviews/service/$serviceId'),
+      headers: _headers,
+    );
+    return _handleResponse(response);
+  }
+
+  Future<Map<String, dynamic>> getAdminReviews() async {
+    final response = await http.get(
+      Uri.parse(ApiConstants.adminReviews),
+      headers: _headers,
     );
     return _handleResponse(response);
   }

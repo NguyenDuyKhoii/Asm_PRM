@@ -18,6 +18,7 @@ public class User
     public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public void UpdateTier()
     {

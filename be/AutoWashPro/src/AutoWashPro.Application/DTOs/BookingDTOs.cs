@@ -52,6 +52,10 @@ public class BookingListDTO
     public decimal TotalPrice { get; set; }
     public string Status { get; set; } = string.Empty;
     public string QrCode { get; set; } = string.Empty;
+    public Guid? StaffId { get; set; }
+    public string? Checklist { get; set; }
+    public string? CompletionImageUrl { get; set; }
+    public DateTime? CompletedAt { get; set; }
 }
 
 public class AvailableSlotDTO
@@ -61,6 +65,15 @@ public class AvailableSlotDTO
     public string EndTime { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
     public int RemainingCapacity { get; set; }
+}
+
+public class LowStockWarningDTO
+{
+    public Guid ChemicalId { get; set; }
+    public string ChemicalName { get; set; } = string.Empty;
+    public decimal CurrentStock { get; set; }
+    public decimal MinimumStock { get; set; }
+    public string Unit { get; set; } = string.Empty;
 }
 
 public class UserTierDTO

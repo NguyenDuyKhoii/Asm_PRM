@@ -253,7 +253,11 @@ public class BookingRepository : IBookingRepository
                 TimeSlotDisplay = $"{b.TimeSlot.StartTime:hh\\:mm} - {b.TimeSlot.EndTime:hh\\:mm}",
                 TotalPrice = b.TotalPrice,
                 Status = b.Status.ToString(),
-                QrCode = b.QrCode
+                QrCode = b.QrCode,
+                StaffId = b.StaffId,
+                Checklist = b.Checklist,
+                CompletionImageUrl = b.CompletionImageUrl,
+                CompletedAt = b.CompletedAt
             })
             .ToListAsync();
     }
@@ -269,5 +273,142 @@ public class BookingRepository : IBookingRepository
         booking.Status = BookingStatus.Cancelled;
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<List<BookingListDTO>> GetTodayBookingsAsync(DateTime today)
+    {
+        // For Staff, return all non-completed/non-cancelled bookings to easily track work
+        return await _context.Bookings
+            .Include(b => b.Service)
+            .Include(b => b.Vehicle)
+            .Include(b => b.TimeSlot)
+            .Where(b => b.Status != BookingStatus.Completed && b.Status != BookingStatus.Cancelled)
+            .OrderBy(b => b.BookingDate)
+            .ThenBy(b => b.TimeSlot.StartTime)
+            .Select(b => new BookingListDTO
+            {
+                Id = b.Id,
+                ServiceName = b.Service.Name,
+                VehiclePlate = b.Vehicle.LicensePlate,
+                BookingDate = b.BookingDate,
+                TimeSlotDisplay = $"{b.TimeSlot.StartTime:hh\\:mm} - {b.TimeSlot.EndTime:hh\\:mm}",
+                TotalPrice = b.TotalPrice,
+                Status = b.Status.ToString(),
+                QrCode = b.QrCode,
+                StaffId = b.StaffId,
+                Checklist = b.Checklist,
+                CompletionImageUrl = b.CompletionImageUrl,
+                CompletedAt = b.CompletedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<bool> UpdateStatusAsync(Guid bookingId, int newStatus)
+    {
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        if (booking == null) return false;
+
+        if (Enum.IsDefined(typeof(BookingStatus), newStatus))
+        {
+            booking.Status = (BookingStatus)newStatus;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> ClaimBookingAsync(Guid bookingId, Guid staffId)
+    {
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        if (booking == null) return false;
+        
+        if (booking.StaffId == null)
+        {
+            booking.StaffId = staffId;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        return booking.StaffId == staffId; // already claimed by this staff
+    }
+
+    public async Task<bool> UpdateChecklistAsync(Guid bookingId, string checklistJson)
+    {
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        if (booking == null) return false;
+
+        booking.Checklist = checklistJson;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> CompleteBookingAsync(Guid bookingId, string imageUrl)
+    {
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        if (booking == null) return false;
+
+        booking.Status = BookingStatus.Completed;
+        booking.CompletionImageUrl = imageUrl;
+        booking.CompletedAt = DateTime.UtcNow;
+
+        // Auto-deduct chemicals
+        var serviceChemicals = await _context.ServiceChemicals
+            .Include(sc => sc.Chemical)
+            .Where(sc => sc.ServiceId == booking.ServiceId)
+            .ToListAsync();
+
+        foreach (var sc in serviceChemicals)
+        {
+            sc.Chemical.CurrentStock -= sc.QuantityPerWash;
+            sc.Chemical.UpdatedAt = DateTime.UtcNow;
+
+            _context.ChemicalLogs.Add(new ChemicalLog
+            {
+                ChemicalId = sc.ChemicalId,
+                ChangeAmount = -sc.QuantityPerWash,
+                Reason = $"Tự động trừ khi hoàn thành booking",
+                BookingId = bookingId,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<LowStockWarningDTO>> GetLowStockWarningsAsync()
+    {
+        return await _context.Chemicals
+            .Where(c => c.CurrentStock <= c.MinimumStock)
+            .Select(c => new LowStockWarningDTO
+            {
+                ChemicalId = c.Id,
+                ChemicalName = c.Name,
+                CurrentStock = c.CurrentStock,
+                MinimumStock = c.MinimumStock,
+                Unit = c.Unit
+            })
+            .ToListAsync();
+    }
+
+    public async Task<object> GetStaffStatsAsync(Guid staffId)
+    {
+        var today = DateTime.UtcNow.Date;
+        var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday); // Assuming Monday is start of week
+        if (today.DayOfWeek == DayOfWeek.Sunday) startOfWeek = startOfWeek.AddDays(-7);
+
+        var allRelevantBookings = await _context.Bookings
+            .Where(b => b.StaffId == staffId || (b.StaffId == null && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)))
+            .ToListAsync();
+
+        var todayCompleted = allRelevantBookings.Count(b => b.StaffId == staffId && b.Status == BookingStatus.Completed && b.CompletedAt.HasValue && b.CompletedAt.Value.Date == today);
+        var weekCompleted = allRelevantBookings.Count(b => b.StaffId == staffId && b.Status == BookingStatus.Completed && b.CompletedAt.HasValue && b.CompletedAt.Value.Date >= startOfWeek);
+        var activeJobs = allRelevantBookings.Count(b => (b.StaffId == null && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)) || (b.StaffId == staffId && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.InProgress)));
+
+        return new
+        {
+            TodayCompleted = todayCompleted,
+            WeekCompleted = weekCompleted,
+            ActiveJobs = activeJobs
+        };
     }
 }
