@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/data/models/service_model.dart';
+import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
 import 'package:autowash_pro/presentation/screens/vehicle/my_vehicles_screen.dart';
 
@@ -431,7 +432,42 @@ class _ServiceListItem extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 8),
+                            // Average Rating
+                            Builder(
+                              builder: (context) {
+                                final apiService = Provider.of<AuthProvider>(context, listen: false).apiService;
+                                return FutureBuilder<Map<String, dynamic>>(
+                                  future: apiService.getServiceReviews(service.id),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData || snapshot.data!['data'] == null) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    final data = snapshot.data!['data'];
+                                    final double avg = (data['averageRating'] ?? 0).toDouble();
+                                    final int total = data['totalReviews'] ?? 0;
+                                    if (total == 0) return const SizedBox.shrink();
+
+                                    return Row(
+                                      children: [
+                                        const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          avg.toStringAsFixed(1),
+                                          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '($total đánh giá)',
+                                          style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [

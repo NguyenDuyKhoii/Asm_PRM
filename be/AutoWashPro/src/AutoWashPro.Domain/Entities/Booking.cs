@@ -25,4 +25,6 @@ public class Booking
     public Service Service { get; set; } = null!;
     public Vehicle Vehicle { get; set; } = null!;
     public TimeSlot TimeSlot { get; set; } = null!;
+    public Review? Review { get; set; }
+    public ICollection<ChemicalLog> ChemicalLogs { get; set; } = new List<ChemicalLog>();
 }

@@ -12,4 +12,5 @@ public class Service
 
     // Navigation properties
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<ServiceChemical> ServiceChemicals { get; set; } = new List<ServiceChemical>();
 }

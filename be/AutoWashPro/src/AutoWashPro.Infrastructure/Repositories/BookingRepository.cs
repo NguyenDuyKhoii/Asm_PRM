@@ -349,8 +349,45 @@ public class BookingRepository : IBookingRepository
         booking.Status = BookingStatus.Completed;
         booking.CompletionImageUrl = imageUrl;
         booking.CompletedAt = DateTime.UtcNow;
+
+        // Auto-deduct chemicals
+        var serviceChemicals = await _context.ServiceChemicals
+            .Include(sc => sc.Chemical)
+            .Where(sc => sc.ServiceId == booking.ServiceId)
+            .ToListAsync();
+
+        foreach (var sc in serviceChemicals)
+        {
+            sc.Chemical.CurrentStock -= sc.QuantityPerWash;
+            sc.Chemical.UpdatedAt = DateTime.UtcNow;
+
+            _context.ChemicalLogs.Add(new ChemicalLog
+            {
+                ChemicalId = sc.ChemicalId,
+                ChangeAmount = -sc.QuantityPerWash,
+                Reason = $"Tự động trừ khi hoàn thành booking",
+                BookingId = bookingId,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<List<LowStockWarningDTO>> GetLowStockWarningsAsync()
+    {
+        return await _context.Chemicals
+            .Where(c => c.CurrentStock <= c.MinimumStock)
+            .Select(c => new LowStockWarningDTO
+            {
+                ChemicalId = c.Id,
+                ChemicalName = c.Name,
+                CurrentStock = c.CurrentStock,
+                MinimumStock = c.MinimumStock,
+                Unit = c.Unit
+            })
+            .ToListAsync();
     }
 
     public async Task<object> GetStaffStatsAsync(Guid staffId)

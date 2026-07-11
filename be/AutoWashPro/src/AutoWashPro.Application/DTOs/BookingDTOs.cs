@@ -67,6 +67,15 @@ public class AvailableSlotDTO
     public int RemainingCapacity { get; set; }
 }
 
+public class LowStockWarningDTO
+{
+    public Guid ChemicalId { get; set; }
+    public string ChemicalName { get; set; } = string.Empty;
+    public decimal CurrentStock { get; set; }
+    public decimal MinimumStock { get; set; }
+    public string Unit { get; set; } = string.Empty;
+}
+
 public class UserTierDTO
 {
     public string TierName { get; set; } = string.Empty;
