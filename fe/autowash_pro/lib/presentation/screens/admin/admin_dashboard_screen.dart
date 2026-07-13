@@ -617,6 +617,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
     final dateStr = bDate != null ? DateFormat('dd/MM/yyyy').format(bDate) : '';
 
+    bool isTimeReached = true;
+    if (bDate != null && timeSlotDisplay.contains('-')) {
+      try {
+        final startPart = timeSlotDisplay.split('-')[0].trim();
+        final timeParts = startPart.split(':');
+        final scheduledStart = DateTime(
+          bDate.year,
+          bDate.month,
+          bDate.day,
+          int.parse(timeParts[0]),
+          int.parse(timeParts[1]),
+        );
+        isTimeReached = DateTime.now().isAfter(scheduledStart);
+      } catch (_) {}
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -732,17 +748,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     onPressed: () => _updateStatus(bookingId, 1),
                   ),
                 if (status.toLowerCase() == 'confirmed')
-                  _buildActionButton(
-                    label: 'Bắt đầu',
-                    color: AppTheme.warning,
-                    onPressed: () => _updateStatus(bookingId, 2),
-                  ),
-                if (status.toLowerCase() == 'inprogress')
-                  _buildActionButton(
-                    label: 'Hoàn thành',
-                    color: AppTheme.success,
-                    onPressed: () => _updateStatus(bookingId, 3),
-                  ),
+                  isTimeReached
+                      ? _buildActionButton(
+                          label: 'Bắt đầu',
+                          color: AppTheme.warning,
+                          onPressed: () => _updateStatus(bookingId, 2),
+                        )
+                      : _buildActionButton(
+                          label: 'Chưa tới giờ',
+                          color: Colors.grey.shade400,
+                          textColor: Colors.white,
+                          onPressed: null,
+                        ),
+
                 const SizedBox(width: 8),
                 _buildActionButton(
                   label: 'Hủy đơn',
@@ -1827,7 +1845,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildActionButton({required String label, required Color color, Color? textColor, required VoidCallback onPressed}) {
+  Widget _buildActionButton({required String label, required Color color, Color? textColor, VoidCallback? onPressed}) {
     final bool isOutline = textColor != null;
     return ElevatedButton(
       onPressed: onPressed,

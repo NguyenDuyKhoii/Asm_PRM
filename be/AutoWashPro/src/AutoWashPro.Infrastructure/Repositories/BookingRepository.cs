@@ -275,14 +275,17 @@ public class BookingRepository : IBookingRepository
         return true;
     }
 
-    public async Task<List<BookingListDTO>> GetTodayBookingsAsync(DateTime today)
+    public async Task<List<BookingListDTO>> GetTodayBookingsAsync(Guid? staffId, DateTime today)
     {
-        // For Staff, return all non-completed/non-cancelled bookings to easily track work
+        // For Staff, return all non-completed/non-cancelled bookings,
+        // and also return completed bookings that belong to this specific staff so they can see ratings and comments.
         return await _context.Bookings
             .Include(b => b.Service)
             .Include(b => b.Vehicle)
             .Include(b => b.TimeSlot)
-            .Where(b => b.Status != BookingStatus.Completed && b.Status != BookingStatus.Cancelled)
+            .Include(b => b.Review)
+            .Where(b => (b.Status != BookingStatus.Completed && b.Status != BookingStatus.Cancelled)
+                     || (b.StaffId == staffId && b.Status == BookingStatus.Completed))
             .OrderBy(b => b.BookingDate)
             .ThenBy(b => b.TimeSlot.StartTime)
             .Select(b => new BookingListDTO
@@ -298,19 +301,34 @@ public class BookingRepository : IBookingRepository
                 StaffId = b.StaffId,
                 Checklist = b.Checklist,
                 CompletionImageUrl = b.CompletionImageUrl,
-                CompletedAt = b.CompletedAt
+                CompletedAt = b.CompletedAt,
+                Rating = b.Review != null ? b.Review.Rating : null,
+                ReviewComment = b.Review != null ? b.Review.Comment : null
             })
             .ToListAsync();
     }
 
     public async Task<bool> UpdateStatusAsync(Guid bookingId, int newStatus)
     {
-        var booking = await _context.Bookings.FindAsync(bookingId);
+        var booking = await _context.Bookings
+            .Include(b => b.TimeSlot)
+            .FirstOrDefaultAsync(b => b.Id == bookingId);
         if (booking == null) return false;
 
         if (Enum.IsDefined(typeof(BookingStatus), newStatus))
         {
-            booking.Status = (BookingStatus)newStatus;
+            var statusEnum = (BookingStatus)newStatus;
+            if (statusEnum == BookingStatus.InProgress)
+            {
+                var localNow = DateTime.UtcNow.AddHours(7);
+                var scheduledStart = booking.BookingDate.Date.Add(booking.TimeSlot.StartTime);
+                if (localNow < scheduledStart)
+                {
+                    throw new Exception($"Chưa tới giờ rửa xe. Lịch hẹn lúc: {booking.BookingDate:dd/MM/yyyy} {booking.TimeSlot.StartTime:hh\\:mm}.");
+                }
+            }
+
+            booking.Status = statusEnum;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -343,8 +361,21 @@ public class BookingRepository : IBookingRepository
 
     public async Task<bool> CompleteBookingAsync(Guid bookingId, string imageUrl)
     {
-        var booking = await _context.Bookings.FindAsync(bookingId);
+        var booking = await _context.Bookings
+            .Include(b => b.User)
+            .FirstOrDefaultAsync(b => b.Id == bookingId);
         if (booking == null) return false;
+
+        if (booking.Status != BookingStatus.Completed)
+        {
+            // Add loyalty points (1 point per 10k VND)
+            var pointsEarned = (int)(booking.TotalPrice / 10000);
+            if (booking.User != null)
+            {
+                booking.User.LoyaltyPoints += pointsEarned;
+                booking.User.UpdateTier();
+            }
+        }
 
         booking.Status = BookingStatus.Completed;
         booking.CompletionImageUrl = imageUrl;

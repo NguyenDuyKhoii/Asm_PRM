@@ -90,34 +90,42 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _translateTier(String tier) {
+    final t = tier.toLowerCase();
+    if (t.contains('platinum')) return 'Bạch kim';
+    if (t.contains('gold')) return 'Vàng';
+    if (t.contains('silver')) return 'Bạc';
+    return 'Thành viên';
+  }
+
   // ── Dynamic Progress Calculation ──
   Map<String, dynamic> _getTierProgress(int points, String actualTier) {
     int nextThreshold = 100;
     int currentBase = 0;
-    String nextTierName = 'Silver';
-    String membershipTitle = 'Standard\nMembership';
+    String nextTierName = 'Bạc';
+    String membershipTitle = 'Thành viên\nTiêu chuẩn';
     
     final t = actualTier.toLowerCase();
     if (t.contains('platinum') || t.contains('diamond')) {
       nextThreshold = points > 0 ? points : 1; 
       currentBase = 1000;
-      nextTierName = 'Max Tier';
-      membershipTitle = 'Elite\nMembership';
+      nextTierName = 'Hạng tối đa';
+      membershipTitle = 'Thành viên\nBạch kim';
     } else if (t.contains('gold')) {
       nextThreshold = 1000;
       currentBase = 300;
-      nextTierName = 'Platinum';
-      membershipTitle = 'Premium\nMembership';
+      nextTierName = 'Bạch kim';
+      membershipTitle = 'Thành viên\nVàng';
     } else if (t.contains('silver')) {
       nextThreshold = 300;
       currentBase = 100;
-      nextTierName = 'Gold';
-      membershipTitle = 'Plus\nMembership';
+      nextTierName = 'Vàng';
+      membershipTitle = 'Thành viên\nBạc';
     } else {
       nextThreshold = 100;
       currentBase = 0;
-      nextTierName = 'Silver';
-      membershipTitle = 'Standard\nMembership';
+      nextTierName = 'Bạc';
+      membershipTitle = 'Thành viên\nTiêu chuẩn';
     }
 
     double progress = 1.0;
@@ -131,14 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
     if (t.contains('platinum') || t.contains('diamond')) {
       return {
         'progress': 1.0,
-        'text': 'Max Tier Reached',
+        'text': 'Đã đạt hạng cao nhất',
         'title': membershipTitle,
       };
     }
     
     return {
       'progress': progress,
-      'text': '$percent% to $nextTierName',
+      'text': 'Còn $percent% để lên $nextTierName',
       'title': membershipTitle,
     };
   }
@@ -189,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'WELCOME BACK',
+                          'CHÀO MỪNG QUAY LẠI',
                             style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w700, color: AppTheme.textMuted, letterSpacing: 1.5),
                           ),
                           const SizedBox(height: 2),
@@ -258,17 +266,17 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _actionCircle(Icons.calendar_month_outlined, 'Book Now', () {
+                  _actionCircle(Icons.calendar_month_outlined, 'Đặt lịch', () {
                     booking.resetBookingFlow();
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
                   }),
-                  _actionCircle(Icons.history_rounded, 'History', () {
+                  _actionCircle(Icons.history_rounded, 'Lịch sử', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyBookingsScreen()));
                   }),
-                  _actionCircle(Icons.directions_car_outlined, 'My Garage', () {
+                  _actionCircle(Icons.directions_car_outlined, 'Nhà xe', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyVehiclesScreen()));
                   }),
-                  _actionCircle(Icons.local_offer_outlined, 'Offers', () {
+                  _actionCircle(Icons.local_offer_outlined, 'Ưu đãi', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const LoyaltyHomeScreen()));
                   }),
                 ],
@@ -322,12 +330,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              'SEASONAL SELECTION',
+                              'DỊCH VỤ NỔI BẬT',
                               style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white.withAlpha(180), letterSpacing: 2),
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Summer Collection',
+                              'Bộ sưu tập mùa hè',
                               style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
                             ),
                             const SizedBox(height: 14),
@@ -338,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                'EXPLORE MORE',
+                                'KHÁM PHÁ NGAY',
                                 style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy, letterSpacing: 0.5),
                               ),
                             ),
@@ -356,13 +364,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Popular Services', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
+                  Text('Dịch vụ phổ biến', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.pristineNavy)),
                   GestureDetector(
                     onTap: () {
                       booking.resetBookingFlow();
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceListScreen()));
                     },
-                    child: Text('View All', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue)),
+                    child: Text('Xem tất cả', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue)),
                   ),
                 ],
               ).animate().fadeIn(duration: 500.ms, delay: 400.ms),
@@ -402,11 +410,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
-            _navItem(1, Icons.directions_car_outlined, Icons.directions_car_rounded, 'Cars'),
+            _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Trang chủ'),
+            _navItem(1, Icons.directions_car_outlined, Icons.directions_car_rounded, 'Nhà xe'),
             const SizedBox(width: 16),
-            _navItem(2, Icons.history_outlined, Icons.history_rounded, 'History'),
-            _navItem(3, Icons.stars_outlined, Icons.stars_rounded, 'Rewards'),
+            _navItem(2, Icons.history_outlined, Icons.history_rounded, 'Lịch sử'),
+            _navItem(3, Icons.stars_outlined, Icons.stars_rounded, 'Ưu đãi'),
           ],
         ),
       ),
@@ -475,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Text(
-                        'PRISTINE ${actualTier.toUpperCase()}',
+                        'HẠNG ${_translateTier(actualTier).toUpperCase()}',
                         style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: colors.pillText, letterSpacing: 0.8),
                       ),
                     ),
@@ -497,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'AVAILABLE\nPOINTS',
+                    'ĐIỂM\nTÍCH LŨY',
                     textAlign: TextAlign.right,
                     style: GoogleFonts.outfit(fontSize: 9, fontWeight: FontWeight.w800, color: AppTheme.textSecondary, letterSpacing: 0.6, height: 1.3),
                   ),
