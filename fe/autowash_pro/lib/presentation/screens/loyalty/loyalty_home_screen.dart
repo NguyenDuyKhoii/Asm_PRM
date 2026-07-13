@@ -148,31 +148,39 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.pristineNavy, size: 20),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                                const SizedBox(width: 12),
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: AppTheme.accentLightBlue,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Image.asset('assets/images/background.png', fit: BoxFit.cover, errorBuilder: (_, _, _) => Icon(Icons.person, color: AppTheme.primaryBlue)),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.pristineNavy, size: 20),
+                                    onPressed: () => Navigator.pop(context),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  auth.user?.fullName ?? 'Pristine Care',
-                                  style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy),
-                                ),
-                              ],
+                                  const SizedBox(width: 12),
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: AppTheme.accentLightBlue,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.asset('assets/images/background.png', fit: BoxFit.cover, errorBuilder: (_, _, _) => Icon(Icons.person, color: AppTheme.primaryBlue)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      auth.user?.fullName ?? 'Pristine Care',
+                                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.card_giftcard_rounded, color: AppTheme.pristineNavy),

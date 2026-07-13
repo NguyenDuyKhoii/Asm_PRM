@@ -1964,7 +1964,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(c['name'] ?? '', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                        Flexible(
+                          child: Text(
+                            c['name'] ?? '',
+                            style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         if (isLow) ...[
                           const SizedBox(width: 6),
                           Container(
