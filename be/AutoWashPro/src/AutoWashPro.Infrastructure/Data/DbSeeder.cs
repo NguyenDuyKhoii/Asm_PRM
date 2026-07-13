@@ -8,7 +8,7 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        // Seed Services
+        // Seed Services (Vietnamese)
         if (!await context.Services.AnyAsync())
         {
             var services = new List<Service>
@@ -16,8 +16,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567801"),
-                    Name = "Basic Car Wash",
-                    Description = "Exterior high-pressure wash, hand dry, and tire shine.",
+                    Name = "Rửa xe cơ bản",
+                    Description = "Rửa xe áp lực cao bên ngoài, lau khô bằng tay và đánh bóng lốp.",
                     Price = 50000,
                     DurationMinutes = 30,
                     ImageUrl = "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&q=80&w=800",
@@ -26,8 +26,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"),
-                    Name = "Premium Car Wash",
-                    Description = "Exterior wash + basic interior cleaning, seat and floor vacuuming.",
+                    Name = "Rửa xe cao cấp",
+                    Description = "Rửa vỏ bên ngoài + vệ sinh nội thất cơ bản, hút bụi ghế và sàn xe.",
                     Price = 100000,
                     DurationMinutes = 45,
                     ImageUrl = "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&q=80&w=800",
@@ -36,8 +36,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"),
-                    Name = "Wash & Vacuum",
-                    Description = "Comprehensive exterior wash + full interior vacuum + dashboard cleaning.",
+                    Name = "Rửa xe & Hút bụi",
+                    Description = "Rửa vỏ toàn diện + hút bụi chi tiết toàn bộ nội thất + lau sạch bảng taplo.",
                     Price = 150000,
                     DurationMinutes = 60,
                     ImageUrl = "https://images.unsplash.com/photo-1600577916048-804c9191e36c?auto=format&fit=crop&q=80&w=800",
@@ -46,8 +46,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"),
-                    Name = "Comprehensive Care",
-                    Description = "Wash + vacuum + paint polish + plastic trim dressing + interior fragrance.",
+                    Name = "Chăm sóc toàn diện",
+                    Description = "Rửa xe + hút bụi + đánh bóng sơn + dưỡng nhựa ngoài + xịt thơm nội thất.",
                     Price = 300000,
                     DurationMinutes = 90,
                     ImageUrl = "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=800",
@@ -56,8 +56,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567805"),
-                    Name = "Interior Polishing",
-                    Description = "Deep interior cleaning, seat washing, ceiling cleaning, leather conditioning.",
+                    Name = "Đánh bóng & Dưỡng nội thất",
+                    Description = "Dọn nội thất sâu, giặt ghế, vệ sinh trần, dưỡng da cao cấp.",
                     Price = 500000,
                     DurationMinutes = 120,
                     ImageUrl = "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800",
@@ -66,6 +66,41 @@ public static class DbSeeder
             };
 
             await context.Services.AddRangeAsync(services);
+        }
+        else
+        {
+            // Auto-update existing English service records to Vietnamese
+            var basicSvc = await context.Services.FindAsync(Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567801"));
+            if (basicSvc != null && basicSvc.Name == "Basic Car Wash")
+            {
+                basicSvc.Name = "Rửa xe cơ bản";
+                basicSvc.Description = "Rửa xe áp lực cao bên ngoài, lau khô bằng tay và đánh bóng lốp.";
+            }
+            var premiumSvc = await context.Services.FindAsync(Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"));
+            if (premiumSvc != null && premiumSvc.Name == "Premium Car Wash")
+            {
+                premiumSvc.Name = "Rửa xe cao cấp";
+                premiumSvc.Description = "Rửa vỏ bên ngoài + vệ sinh nội thất cơ bản, hút bụi ghế và sàn xe.";
+            }
+            var washVacuum = await context.Services.FindAsync(Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"));
+            if (washVacuum != null && washVacuum.Name == "Wash & Vacuum")
+            {
+                washVacuum.Name = "Rửa xe & Hút bụi";
+                washVacuum.Description = "Rửa vỏ toàn diện + hút bụi chi tiết toàn bộ nội thất + lau sạch bảng taplo.";
+            }
+            var comprehensive = await context.Services.FindAsync(Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"));
+            if (comprehensive != null && comprehensive.Name == "Comprehensive Care")
+            {
+                comprehensive.Name = "Chăm sóc toàn diện";
+                comprehensive.Description = "Rửa xe + hút bụi + đánh bóng sơn + dưỡng nhựa ngoài + xịt thơm nội thất.";
+            }
+            var interior = await context.Services.FindAsync(Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567805"));
+            if (interior != null && interior.Name == "Interior Polishing")
+            {
+                interior.Name = "Đánh bóng & Dưỡng nội thất";
+                interior.Description = "Dọn nội thất sâu, giặt ghế, vệ sinh trần, dưỡng da cao cấp.";
+            }
+            await context.SaveChangesAsync();
         }
 
         // Seed Demo Users
@@ -173,7 +208,7 @@ public static class DbSeeder
             await context.TimeSlots.AddRangeAsync(timeSlots);
         }
 
-        // Seed Rewards
+        // Seed Rewards (Vietnamese)
         if (!await context.Rewards.AnyAsync())
         {
             var rewards = new List<Reward>
@@ -181,8 +216,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567801"),
-                    Name = "20% Off Next Wash",
-                    Description = "20% discount voucher for any car wash. Applies to all services.",
+                    Name = "Voucher Giảm Giá 20%",
+                    Description = "Voucher giảm giá 20% cho bất kỳ ca rửa xe nào. Áp dụng cho mọi dịch vụ.",
                     Type = RewardType.Discount,
                     PointsCost = 50,
                     DiscountValue = 20,
@@ -192,8 +227,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567802"),
-                    Name = "50% Off Next Wash",
-                    Description = "50% discount voucher for 1 car wash. Applies to services from 100,000đ.",
+                    Name = "Voucher Giảm Giá 50%",
+                    Description = "Voucher giảm giá 50% cho 1 lần rửa xe. Áp dụng cho dịch vụ từ 100.000đ.",
                     Type = RewardType.Discount,
                     PointsCost = 100,
                     DiscountValue = 50,
@@ -203,8 +238,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567803"),
-                    Name = "Free Basic Wash",
-                    Description = "Redeem points for 1 completely free basic car wash.",
+                    Name = "Rửa xe Cơ bản Miễn phí",
+                    Description = "Đổi điểm lấy 1 lần rửa xe cơ bản hoàn toàn miễn phí.",
                     Type = RewardType.FreeWash,
                     PointsCost = 150,
                     DiscountValue = 50000,
@@ -214,8 +249,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567804"),
-                    Name = "Free Premium Wash",
-                    Description = "Redeem points for 1 completely free premium car wash.",
+                    Name = "Rửa xe Cao cấp Miễn phí",
+                    Description = "Đổi điểm lấy 1 lần rửa xe cao cấp hoàn toàn miễn phí.",
                     Type = RewardType.FreeWash,
                     PointsCost = 300,
                     DiscountValue = 100000,
@@ -225,8 +260,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567805"),
-                    Name = "Interior Fragrance",
-                    Description = "Free premium interior fragrance spray with your next car wash.",
+                    Name = "Xịt thơm Nội thất",
+                    Description = "Miễn phí xịt thơm nội thất cao cấp cho ca rửa xe tiếp theo.",
                     Type = RewardType.AddOn,
                     PointsCost = 30,
                     DiscountValue = 30000,
@@ -236,8 +271,8 @@ public static class DbSeeder
                 new()
                 {
                     Id = Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567806"),
-                    Name = "Nano Paint Coating",
-                    Description = "Free protective nano paint coating service (worth 200,000đ).",
+                    Name = "Phủ bóng Sơn Nano",
+                    Description = "Miễn phí dịch vụ phủ bóng sơn bảo vệ Nano (trị giá 200.000đ).",
                     Type = RewardType.AddOn,
                     PointsCost = 400,
                     DiscountValue = 200000,
@@ -247,6 +282,47 @@ public static class DbSeeder
             };
 
             await context.Rewards.AddRangeAsync(rewards);
+        }
+        else
+        {
+            // Auto-update existing English reward records to Vietnamese
+            var r1 = await context.Rewards.FindAsync(Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567801"));
+            if (r1 != null && r1.Name == "20% Off Next Wash")
+            {
+                r1.Name = "Voucher Giảm Giá 20%";
+                r1.Description = "Voucher giảm giá 20% cho bất kỳ ca rửa xe nào. Áp dụng cho mọi dịch vụ.";
+            }
+            var r2 = await context.Rewards.FindAsync(Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567802"));
+            if (r2 != null && r2.Name == "50% Off Next Wash")
+            {
+                r2.Name = "Voucher Giảm Giá 50%";
+                r2.Description = "Voucher giảm giá 50% cho 1 lần rửa xe. Áp dụng cho dịch vụ từ 100.000đ.";
+            }
+            var r3 = await context.Rewards.FindAsync(Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567803"));
+            if (r3 != null && r3.Name == "Free Basic Wash")
+            {
+                r3.Name = "Rửa xe Cơ bản Miễn phí";
+                r3.Description = "Đổi điểm lấy 1 lần rửa xe cơ bản hoàn toàn miễn phí.";
+            }
+            var r4 = await context.Rewards.FindAsync(Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567804"));
+            if (r4 != null && r4.Name == "Free Premium Wash")
+            {
+                r4.Name = "Rửa xe Cao cấp Miễn phí";
+                r4.Description = "Đổi điểm lấy 1 lần rửa xe cao cấp hoàn toàn miễn phí.";
+            }
+            var r5 = await context.Rewards.FindAsync(Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567805"));
+            if (r5 != null && r5.Name == "Interior Fragrance")
+            {
+                r5.Name = "Xịt thơm Nội thất";
+                r5.Description = "Miễn phí xịt thơm nội thất cao cấp cho ca rửa xe tiếp theo.";
+            }
+            var r6 = await context.Rewards.FindAsync(Guid.Parse("c1e2f3a4-b5c6-7890-abcd-ef1234567806"));
+            if (r6 != null && r6.Name == "Nano Paint Coating")
+            {
+                r6.Name = "Phủ bóng Sơn Nano";
+                r6.Description = "Miễn phí dịch vụ phủ bóng sơn bảo vệ Nano (trị giá 200.000đ).";
+            }
+            await context.SaveChangesAsync();
         }
 
         // Seed Chemicals

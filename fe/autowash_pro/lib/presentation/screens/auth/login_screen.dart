@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 4),
 
                       Text(
-                        'Experience super fast car wash',
+                        'Trải nghiệm dịch vụ rửa xe siêu nhanh',
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           color: AppTheme.textSecondary,
@@ -141,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     labelText: 'Email',
                                     prefixIcon: Icon(Icons.email_outlined, color: AppTheme.textMuted),
                                   ),
-                                  validator: (v) => v == null || v.isEmpty ? 'Please enter your email' : null,
+                                  validator: (v) => v == null || v.isEmpty ? 'Vui lòng nhập email của bạn' : null,
                                 ).animate().fadeIn(duration: 400.ms, delay: 300.ms).slideX(begin: -0.1),
 
                                 const SizedBox(height: 20),
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   obscureText: _obscurePassword,
                                   style: const TextStyle(color: AppTheme.textPrimary),
                                   decoration: InputDecoration(
-                                    labelText: 'Password',
+                                    labelText: 'Mật khẩu',
                                     prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.textMuted),
                                     suffixIcon: IconButton(
                                       icon: Icon(
@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                     ),
                                   ),
-                                  validator: (v) => v == null || v.isEmpty ? 'Please enter your password' : null,
+                                  validator: (v) => v == null || v.isEmpty ? 'Vui lòng nhập mật khẩu của bạn' : null,
                                 ).animate().fadeIn(duration: 400.ms, delay: 400.ms).slideX(begin: -0.1),
 
                                 const SizedBox(height: 32),
@@ -208,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                                               )
                                             : Text(
-                                                'Login',
+                                                'Đăng nhập',
                                                 style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
                                               ),
                                       ),
@@ -222,13 +222,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Wrap(
                                   alignment: WrapAlignment.center,
                                   children: [
-                                    Text('Don\'t have an account? ', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 15)),
+                                    Text('Chưa có tài khoản? ', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 15)),
                                     GestureDetector(
                                       onTap: () {
                                         Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
                                       },
                                       child: Text(
-                                        'Register now',
+                                        'Đăng ký ngay',
                                         style: GoogleFonts.outfit(
                                           color: AppTheme.primaryBlue,
                                           fontWeight: FontWeight.w800,

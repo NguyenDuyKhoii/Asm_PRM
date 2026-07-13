@@ -18,6 +18,15 @@ class LoyaltyHomeScreen extends StatefulWidget {
 class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
   int _selectedTab = 0; // 0: All, 1: Services, 2: Discounts
 
+  String _translateTier(String tier) {
+    switch (tier.toLowerCase()) {
+      case 'silver': return 'Bạc';
+      case 'gold': return 'Vàng';
+      case 'platinum': return 'Bạch kim';
+      default: return 'Thành viên';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -33,12 +42,12 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text('Redeem Reward', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
-        content: Text('Use ${reward.pointsCost} points to redeem:\n\n${reward.name}?', style: GoogleFonts.outfit(fontSize: 16)),
+        title: Text('Đổi Quà Tặng', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
+        content: Text('Dùng ${reward.pointsCost} điểm để đổi:\n\n${reward.name}?', style: GoogleFonts.outfit(fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+            child: Text('Hủy', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -55,16 +64,16 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
               if (context.mounted) {
                 if (success) {
                   messenger.showSnackBar(
-                    const SnackBar(content: Text('Reward redeemed successfully!'), backgroundColor: AppTheme.success, behavior: SnackBarBehavior.floating),
+                    const SnackBar(content: Text('Đổi quà tặng thành công!'), backgroundColor: AppTheme.success, behavior: SnackBarBehavior.floating),
                   );
                 } else {
                   messenger.showSnackBar(
-                    SnackBar(content: Text(provider.error ?? 'Error occurred'), backgroundColor: AppTheme.error, behavior: SnackBarBehavior.floating),
+                    SnackBar(content: Text(provider.error ?? 'Có lỗi xảy ra'), backgroundColor: AppTheme.error, behavior: SnackBarBehavior.floating),
                   );
                 }
               }
             },
-            child: Text('Redeem', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Đổi quà', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -80,14 +89,46 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
       body: SafeArea(
         child: Consumer<LoyaltyProvider>(
           builder: (context, provider, _) {
-            if (provider.isLoading && provider.loyaltyHome == null) {
-              return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue));
+            if (provider.error != null && provider.loyaltyHome == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppTheme.error, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Lỗi: ${provider.error}',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          provider.loadLoyaltyHome();
+                          provider.loadRewards();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
 
             final loyalty = provider.loyaltyHome;
-            if (loyalty == null) return const SizedBox.shrink();
+            if (loyalty == null) {
+              return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue));
+            }
 
             final currentTier = loyalty.tierName;
+            final translatedTier = _translateTier(currentTier);
             final isSilver = currentTier.toLowerCase() == 'silver';
             final badgeColor = isSilver ? Colors.grey.shade300 : Colors.amber;
             final badgeTextColor = isSilver ? AppTheme.pristineNavy : Colors.black;
@@ -171,7 +212,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'CURRENT STATUS',
+                                    'HẠNG HIỆN TẠI',
                                     style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white.withAlpha(200), letterSpacing: 1),
                                   ),
                                   Container(
@@ -185,7 +226,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                         Icon(Icons.stars_rounded, size: 12, color: badgeTextColor),
                                         const SizedBox(width: 4),
                                         Text(
-                                          currentTier,
+                                          translatedTier,
                                           style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: badgeTextColor),
                                         ),
                                       ],
@@ -195,7 +236,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '$currentTier Member',
+                                'Hạng $translatedTier',
                                 style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                               const SizedBox(height: 20),
@@ -209,13 +250,13 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    'pts',
+                                    'điểm',
                                     style: GoogleFonts.outfit(fontSize: 14, color: Colors.white.withAlpha(200)),
                                   ),
                                   const Spacer(),
                                   if (loyalty.pointsToNextTier > 0)
                                     Text(
-                                      '${loyalty.pointsToNextTier} pts to ${loyalty.nextTierName}',
+                                      'Còn ${loyalty.pointsToNextTier} điểm để lên ${_translateTier(loyalty.nextTierName)}',
                                       style: GoogleFonts.outfit(fontSize: 12, color: Colors.white.withAlpha(200)),
                                     ),
                                 ],
@@ -250,7 +291,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('0', style: GoogleFonts.outfit(fontSize: 10, color: Colors.white.withAlpha(200))),
-                                    Text('${loyalty.loyaltyPoints + loyalty.pointsToNextTier} pts', style: GoogleFonts.outfit(fontSize: 10, color: Colors.white.withAlpha(200))),
+                                    Text('${loyalty.loyaltyPoints + loyalty.pointsToNextTier} điểm', style: GoogleFonts.outfit(fontSize: 10, color: Colors.white.withAlpha(200))),
                                   ],
                                 ),
                               ]
@@ -262,16 +303,16 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                         // Tabs
                         Row(
                           children: [
-                            _buildTab(0, 'All Rewards'),
-                            const SizedBox(width: 12),
-                            _buildTab(1, 'Services'),
-                            const SizedBox(width: 12),
-                            _buildTab(2, 'Discounts'),
+                            _buildTab(0, 'Tất cả'),
+                                const SizedBox(width: 12),
+                                _buildTab(1, 'Dịch vụ'),
+                                const SizedBox(width: 12),
+                                _buildTab(2, 'Giảm giá'),
                           ],
                         ),
                         const SizedBox(height: 24),
                         
-                        Text('Available Rewards', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
+                        Text('Quà tặng sẵn có', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
                         const SizedBox(height: 16),
                       ],
                     ),
@@ -308,7 +349,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                 ),
                                 child: Center(
                                   child: reward.type.toLowerCase() == 'discount' 
-                                      ? Text('${reward.discountValue.toInt()}% OFF', textAlign: TextAlign.center, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue, fontSize: 14))
+                                      ? Text('GIẢM\n${reward.discountValue.toInt()}%', textAlign: TextAlign.center, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue, fontSize: 14))
                                       : Icon(Icons.clean_hands_rounded, size: 32, color: AppTheme.primaryBlue),
                                 ),
                               ),
@@ -325,7 +366,7 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                       children: [
                                         Icon(Icons.stars_rounded, size: 14, color: canRedeem ? Colors.amber.shade700 : AppTheme.textMuted),
                                         const SizedBox(width: 4),
-                                        Text('${reward.pointsCost} pts', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: canRedeem ? Colors.amber.shade700 : AppTheme.textMuted)),
+                                        Text('${reward.pointsCost} điểm', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: canRedeem ? Colors.amber.shade700 : AppTheme.textMuted)),
                                       ],
                                     ),
                                   ],
@@ -374,13 +415,13 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('$currentTier Tier Benefits', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
+                          Text('Đặc quyền hạng $translatedTier', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
                           const SizedBox(height: 20),
-                          _buildBenefit(Icons.check_circle_outline_rounded, '1.2x Points Multiplier', 'Earn points faster on every visit.'),
+                          _buildBenefit(Icons.check_circle_outline_rounded, 'Nhân 1.2x điểm tích lũy', 'Tích lũy điểm nhanh hơn trong mỗi lần ghé thăm.'),
                           const SizedBox(height: 16),
-                          _buildBenefit(Icons.check_circle_outline_rounded, 'Birthday Reward', 'A special gift during your birthday month.'),
+                          _buildBenefit(Icons.check_circle_outline_rounded, 'Quà tặng sinh nhật', 'Một phần quà đặc biệt dành riêng cho bạn trong tháng sinh nhật.'),
                           const SizedBox(height: 16),
-                          _buildBenefit(Icons.check_circle_outline_rounded, 'Priority Booking', 'Access to weekend slots 24h earlier.'),
+                          _buildBenefit(Icons.check_circle_outline_rounded, 'Ưu tiên đặt lịch', 'Truy cập đặt lịch các khung giờ cuối tuần sớm hơn 24 giờ.'),
                           const SizedBox(height: 24),
                           
                           if (loyalty.pointsToNextTier > 0)
@@ -398,9 +439,9 @@ class _LoyaltyHomeScreenState extends State<LoyaltyHomeScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('Unlock ${loyalty.nextTierName} Tier', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber.shade700)),
+                                        Text('Mở khóa hạng ${_translateTier(loyalty.nextTierName)}', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber.shade700)),
                                         const SizedBox(height: 2),
-                                        Text('Get free concierge pick-up & 1.5x points.', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
+                                        Text('Nhận dịch vụ đưa đón xe miễn phí & tích lũy 1.5x điểm.', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
                                       ],
                                     ),
                                   ),

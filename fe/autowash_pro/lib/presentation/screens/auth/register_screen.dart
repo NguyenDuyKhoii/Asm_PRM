@@ -38,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match'), backgroundColor: AppTheme.error),
+        const SnackBar(content: Text('Mật khẩu không khớp'), backgroundColor: AppTheme.error),
       );
       return;
     }
@@ -103,13 +103,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 32),
 
                     Text(
-                      'Create Account',
+                      'Tạo tài khoản',
                       style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
                     ).animate().fadeIn(duration: 400.ms).slideX(),
 
                     const SizedBox(height: 8),
                     Text(
-                      'Register to experience smart car wash services',
+                      'Đăng ký để trải nghiệm dịch vụ rửa xe thông minh',
                       style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
                     ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
 
@@ -129,11 +129,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           child: Column(
                             children: [
-                              _buildField('Full Name', Icons.person_outline, _fullNameController, 0),
+                              _buildField('Họ và tên', Icons.person_outline, _fullNameController, 0),
                               const SizedBox(height: 16),
                               _buildField('Email', Icons.email_outlined, _emailController, 1, type: TextInputType.emailAddress),
                               const SizedBox(height: 16),
-                              _buildField('Phone Number', Icons.phone_outlined, _phoneController, 2, type: TextInputType.phone),
+                              _buildField('Số điện thoại', Icons.phone_outlined, _phoneController, 2, type: TextInputType.phone),
                               const SizedBox(height: 16),
 
                               TextFormField(
@@ -141,14 +141,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 obscureText: _obscurePassword,
                                 style: const TextStyle(color: AppTheme.textPrimary),
                                 decoration: InputDecoration(
-                                  labelText: 'Password',
+                                  labelText: 'Mật khẩu',
                                   prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.textMuted),
                                   suffixIcon: IconButton(
                                     icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppTheme.textMuted),
                                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                   ),
                                 ),
-                                validator: (v) => v == null || v.length < 6 ? 'Password must be at least 6 characters' : null,
+                                validator: (v) => v == null || v.length < 6 ? 'Mật khẩu phải có ít nhất 6 ký tự' : null,
                               ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: 300 + 3 * 100)),
 
                               const SizedBox(height: 16),
@@ -158,10 +158,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 obscureText: true,
                                 style: const TextStyle(color: AppTheme.textPrimary),
                                 decoration: const InputDecoration(
-                                  labelText: 'Confirm Password',
+                                  labelText: 'Xác nhận mật khẩu',
                                   prefixIcon: Icon(Icons.lock_outline, color: AppTheme.textMuted),
                                 ),
-                                validator: (v) => v != _passwordController.text ? 'Passwords do not match' : null,
+                                validator: (v) => v != _passwordController.text ? 'Mật khẩu không khớp' : null,
                               ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: 300 + 4 * 100)),
 
                               const SizedBox(height: 32),
@@ -201,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       onPressed: auth.isLoading ? null : _handleRegister,
                                       child: auth.isLoading
                                           ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                                          : Text('Register', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1)),
+                                          : Text('Đăng ký', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1)),
                                     ),
                                   );
                                 },
@@ -232,7 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         labelText: label,
         prefixIcon: Icon(icon, color: AppTheme.textMuted),
       ),
-      validator: (v) => v == null || v.isEmpty ? 'Please enter $label' : null,
+      validator: (v) => v == null || v.isEmpty ? 'Vui lòng nhập $label' : null,
     ).animate().fadeIn(duration: 400.ms, delay: Duration(milliseconds: 300 + index * 100));
   }
 }
