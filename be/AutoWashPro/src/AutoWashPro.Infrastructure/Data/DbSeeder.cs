@@ -379,6 +379,18 @@ public static class DbSeeder
             await context.ServiceChemicals.AddRangeAsync(serviceChemicals);
         }
 
+        // Reset InProgress bookings for today to Confirmed so staff can click "Bắt đầu làm việc"
+        var todayDate = DateTime.UtcNow.Date;
+        var todayBookings = await context.Bookings
+            .Where(b => b.BookingDate.Date == todayDate && b.Status == BookingStatus.InProgress)
+            .ToListAsync();
+            
+        foreach (var b in todayBookings)
+        {
+            b.Status = BookingStatus.Confirmed;
+            b.Checklist = null; // Clear checklist so it's fresh
+        }
+
         await context.SaveChangesAsync();
     }
 }

@@ -102,16 +102,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 32),
 
-                    Text(
-                      'Tạo tài khoản',
-                      style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
-                    ).animate().fadeIn(duration: 400.ms).slideX(),
+                    Center(
+                      child: Text(
+                        'Tạo tài khoản',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
+                      ).animate().fadeIn(duration: 400.ms).slideX(),
+                    ),
 
                     const SizedBox(height: 8),
-                    Text(
-                      'Đăng ký để trải nghiệm dịch vụ rửa xe thông minh',
-                      style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
-                    ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
+                    Center(
+                      child: Text(
+                        'Đăng ký để trải nghiệm dịch vụ rửa xe thông minh',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+                      ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
+                    ),
 
                     const SizedBox(height: 32),
 

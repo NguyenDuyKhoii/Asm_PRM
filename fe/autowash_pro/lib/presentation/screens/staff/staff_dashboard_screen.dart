@@ -239,7 +239,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
           backgroundColor: isTimeReached ? Colors.orange : Colors.grey.shade400,
         ),
         child: Text(
-          isTimeReached ? 'Bắt đầu rửa' : 'Chưa tới giờ',
+          isTimeReached ? 'Bắt đầu làm việc' : 'Chưa tới giờ',
           style: const TextStyle(color: Colors.white),
         ),
       );
