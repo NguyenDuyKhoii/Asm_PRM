@@ -249,6 +249,60 @@ public static class DbSeeder
             await context.Rewards.AddRangeAsync(rewards);
         }
 
+        // Seed Chemicals
+        if (!await context.Chemicals.AnyAsync())
+        {
+            var chemicals = new List<Chemical>
+            {
+                new() { Id = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567801"), Name = "Active Foam Shampoo", Unit = "ml", CurrentStock = 20000, MinimumStock = 2000, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new() { Id = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567802"), Name = "Tire Wax & Shine", Unit = "ml", CurrentStock = 5000, MinimumStock = 500, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new() { Id = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567803"), Name = "Glass Cleaner", Unit = "ml", CurrentStock = 10000, MinimumStock = 1000, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new() { Id = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567804"), Name = "Leather Conditioner", Unit = "ml", CurrentStock = 5000, MinimumStock = 500, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new() { Id = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567805"), Name = "Premium Car Wax / Polish", Unit = "ml", CurrentStock = 3000, MinimumStock = 300, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new() { Id = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567806"), Name = "Deodorizer & Fragrance", Unit = "ml", CurrentStock = 2000, MinimumStock = 200, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            };
+            await context.Chemicals.AddRangeAsync(chemicals);
+        }
+
+        // Seed ServiceChemicals
+        if (!await context.ServiceChemicals.AnyAsync())
+        {
+            var serviceChemicals = new List<ServiceChemical>
+            {
+                // Basic Car Wash (a1b2c3d4-e5f6-7890-abcd-ef1234567801)
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567801"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567801"), QuantityPerWash = 150 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567801"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567803"), QuantityPerWash = 50 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567801"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567802"), QuantityPerWash = 30 },
+
+                // Premium Car Wash (a1b2c3d4-e5f6-7890-abcd-ef1234567802)
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567801"), QuantityPerWash = 200 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567803"), QuantityPerWash = 80 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567802"), QuantityPerWash = 40 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567802"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567806"), QuantityPerWash = 10 },
+
+                // Wash & Vacuum (a1b2c3d4-e5f6-7890-abcd-ef1234567803)
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567801"), QuantityPerWash = 200 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567803"), QuantityPerWash = 100 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567802"), QuantityPerWash = 40 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567804"), QuantityPerWash = 30 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567803"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567806"), QuantityPerWash = 15 },
+
+                // Comprehensive Care (a1b2c3d4-e5f6-7890-abcd-ef1234567804)
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567801"), QuantityPerWash = 250 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567803"), QuantityPerWash = 120 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567802"), QuantityPerWash = 50 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567804"), QuantityPerWash = 50 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567805"), QuantityPerWash = 20 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567804"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567806"), QuantityPerWash = 20 },
+
+                // Interior Polishing (a1b2c3d4-e5f6-7890-abcd-ef1234567805)
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567805"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567803"), QuantityPerWash = 150 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567805"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567804"), QuantityPerWash = 100 },
+                new() { Id = Guid.NewGuid(), ServiceId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567805"), ChemicalId = Guid.Parse("e1b2c3d4-e5f6-7890-abcd-ef1234567806"), QuantityPerWash = 30 }
+            };
+            await context.ServiceChemicals.AddRangeAsync(serviceChemicals);
+        }
+
         await context.SaveChangesAsync();
     }
 }

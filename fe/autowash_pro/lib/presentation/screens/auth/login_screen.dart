@@ -80,27 +80,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Logo & Title
-                      Container(
-                        width: 110,
-                        height: 110,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue,
-                          borderRadius: BorderRadius.circular(36),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryBlue.withAlpha(80),
-                              blurRadius: 40,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.local_car_wash_rounded, size: 56, color: Colors.white),
+                      Image.asset(
+                        'assets/images/autowashing_logo.png',
+                        width: 170,
+                        fit: BoxFit.contain,
                       ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 12),
 
                       Text(
-                        'AutoWash Pro',
+                        'AutoWashing',
                         style: GoogleFonts.outfit(
                           fontSize: 36,
                           fontWeight: FontWeight.w900,
@@ -109,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.3),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 4),
 
                       Text(
                         'Experience super fast car wash',
@@ -120,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
 
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 16),
 
                       // Glassmorphism Form Container
                       ClipRRect(
@@ -255,6 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ).animate().fadeIn(duration: 600.ms, delay: 100.ms).slideY(begin: 0.1),
 
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
