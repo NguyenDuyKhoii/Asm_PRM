@@ -79,14 +79,14 @@ class BookingSuccessScreen extends StatelessWidget {
                             const SizedBox(height: 18),
                             
                             Text(
-                              'Booking Successful!',
+                              'Đặt lịch thành công!',
                               style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -0.5),
                             ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
                             
                             const SizedBox(height: 6),
                             
                             Text(
-                              'Your booking has been confirmed.',
+                              'Lịch hẹn của bạn đã được ghi nhận.',
                               style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
                             ).animate().fadeIn(duration: 400.ms, delay: 250.ms),
 
@@ -129,7 +129,7 @@ class BookingSuccessScreen extends StatelessWidget {
                                   const SizedBox(height: 14),
                                   
                                   Text(
-                                    'CHECK-IN CODE',
+                                    'MÃ CHECK-IN',
                                     style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w900, color: AppTheme.textMuted, letterSpacing: 1.5),
                                   ),
                                   
@@ -137,13 +137,13 @@ class BookingSuccessScreen extends StatelessWidget {
                                   _divider(),
 
                                   // Details rows
-                                  _successDetailRow(Icons.local_car_wash_rounded, 'Service', confirm.serviceName),
+                                  _successDetailRow(Icons.local_car_wash_rounded, 'Dịch vụ', confirm.serviceName),
                                   _divider(),
-                                  _successDetailRow(Icons.directions_car_filled_rounded, 'License Plate', confirm.vehiclePlate),
+                                  _successDetailRow(Icons.directions_car_filled_rounded, 'Biển số xe', confirm.vehiclePlate),
                                   _divider(),
-                                  _successDetailRow(Icons.calendar_month_rounded, 'Date', '${confirm.bookingDate.day}/${confirm.bookingDate.month}/${confirm.bookingDate.year}'),
+                                  _successDetailRow(Icons.calendar_month_rounded, 'Ngày', '${confirm.bookingDate.day}/${confirm.bookingDate.month}/${confirm.bookingDate.year}'),
                                   _divider(),
-                                  _successDetailRow(Icons.access_time_filled_rounded, 'Time', confirm.timeSlotDisplay),
+                                  _successDetailRow(Icons.access_time_filled_rounded, 'Khung giờ', confirm.timeSlotDisplay),
                                   _divider(),
 
                                   const SizedBox(height: 16),
@@ -153,7 +153,7 @@ class BookingSuccessScreen extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Total Payment',
+                                        'Tổng thanh toán',
                                         style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary, fontWeight: FontWeight.w700),
                                       ),
                                       Text(
@@ -189,7 +189,7 @@ class BookingSuccessScreen extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
                           ),
                           child: Text(
-                            'Back to Home',
+                            'Quay lại Trang chủ',
                             style: GoogleFonts.outfit(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,

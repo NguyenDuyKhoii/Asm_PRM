@@ -123,6 +123,7 @@ public class AdminController : ControllerBase
         {
             var booking = await _context.Bookings
                 .Include(b => b.User)
+                .Include(b => b.TimeSlot)
                 .FirstOrDefaultAsync(b => b.Id == id);
             if (booking == null)
             {
@@ -135,10 +136,19 @@ public class AdminController : ControllerBase
             }
 
             var newStatus = (BookingStatus)dto.Status;
+            if (newStatus == BookingStatus.InProgress)
+            {
+                var localNow = DateTime.UtcNow.AddHours(7);
+                var scheduledStart = booking.BookingDate.Date.Add(booking.TimeSlot.StartTime);
+                if (localNow < scheduledStart)
+                {
+                    return BadRequest(ApiResponse<bool>.ErrorResponse($"Chưa tới giờ rửa xe. Lịch hẹn lúc: {booking.BookingDate:dd/MM/yyyy} {booking.TimeSlot.StartTime:hh\\:mm}."));
+                }
+            }
             if (booking.Status != BookingStatus.Completed && newStatus == BookingStatus.Completed)
             {
-                // Add loyalty points (10 points per 100k VND)
-                var pointsEarned = (int)(booking.TotalPrice / 100000) * 10;
+                // Add loyalty points (1 point per 10k VND)
+                var pointsEarned = (int)(booking.TotalPrice / 10000);
                 if (booking.User != null)
                 {
                     booking.User.LoyaltyPoints += pointsEarned;

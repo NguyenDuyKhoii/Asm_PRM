@@ -56,6 +56,8 @@ public class BookingListDTO
     public string? Checklist { get; set; }
     public string? CompletionImageUrl { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public int? Rating { get; set; }
+    public string? ReviewComment { get; set; }
 }
 
 public class AvailableSlotDTO

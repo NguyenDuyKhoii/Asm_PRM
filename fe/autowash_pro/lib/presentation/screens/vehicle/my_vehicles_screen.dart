@@ -22,25 +22,25 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete Vehicle', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: Text('Are you sure you want to delete vehicle ${vehicle.licensePlate}?', style: GoogleFonts.outfit()),
+        title: Text('Xóa phương tiện', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text('Bạn có chắc chắn muốn xóa phương tiện ${vehicle.licensePlate}?', style: GoogleFonts.outfit()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+            child: Text('Hủy', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
               final success = await provider.deleteVehicle(vehicle.id);
               if (success && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vehicle deleted successfully!'), backgroundColor: AppTheme.success));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Xóa phương tiện thành công!'), backgroundColor: AppTheme.success));
               } else if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Delete failed!'), backgroundColor: AppTheme.error));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Xóa thất bại!'), backgroundColor: AppTheme.error));
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-            child: Text('Delete', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text('Xóa', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -67,7 +67,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('My Garage'),
+        title: const Text('Nhà xe của tôi'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -76,7 +76,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Manage your registered vehicles for quick booking and personalized service care.',
+              'Quản lý các phương tiện đã đăng ký để đặt lịch nhanh chóng và chăm sóc chu đáo.',
               style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 20),
@@ -92,7 +92,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
               ),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search your vehicles...',
+                  hintText: 'Tìm kiếm phương tiện...',
                   hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
                   prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
                   border: InputBorder.none,
@@ -118,13 +118,13 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                         children: [
                           Icon(Icons.directions_car_rounded, size: 64, color: AppTheme.textMuted.withAlpha(100)),
                           const SizedBox(height: 16),
-                          Text('No vehicles found', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                          Text('Không tìm thấy phương tiện nào', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                           const SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVehicleScreen()));
                             },
-                            child: const Text('Add Vehicle'),
+                            child: const Text('Thêm phương tiện'),
                           ),
                         ],
                       ),
@@ -157,15 +157,15 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('LOYALTY REWARDS', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white.withAlpha(200), letterSpacing: 1)),
+                      Text('ƯU ĐÃI THÀNH VIÊN', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white.withAlpha(200), letterSpacing: 1)),
                       const SizedBox(height: 8),
-                      Text('Premium Member', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                      Text('Thành viên Cao cấp', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Progress to free wash', style: GoogleFonts.outfit(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
-                          Text('850 / 1000 pts', style: GoogleFonts.outfit(fontSize: 12, color: Colors.amber, fontWeight: FontWeight.bold)),
+                          Text('Tiến trình nhận rửa xe miễn phí', style: GoogleFonts.outfit(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text('850 / 1000 điểm', style: GoogleFonts.outfit(fontSize: 12, color: Colors.amber, fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -255,7 +255,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                       color: AppTheme.primaryBlue,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text('PRIMARY', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text('MẶC ĐỊNH', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],
@@ -291,7 +291,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                     const SizedBox(width: 8),
                     const CircleAvatar(radius: 3, backgroundColor: AppTheme.success),
                     const SizedBox(width: 4),
-                    Text('Active Service Plan', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
+                    Text('Kế hoạch chăm sóc hoạt động', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -305,7 +305,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Ceramic Coating Integrity', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
+                          Text('Độ phủ bóng Ceramic', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textPrimary)),
                           Text('94%', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
                         ],
                       ),
@@ -334,7 +334,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text('Manage Asset'),
+                        child: const Text('Quản lý tài sản'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -350,7 +350,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
                         ),
-                        child: const Text('Book Service'),
+                        child: const Text('Đặt dịch vụ'),
                       ),
                     ),
                   ],
@@ -368,7 +368,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Select Your Vehicle'),
+        title: const Text('Chọn phương tiện'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.pristineNavy),
           onPressed: () => Navigator.pop(context),
@@ -389,8 +389,8 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Step 1 of 4', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
-                        Text('Vehicle Details', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                        Text('Bước 1 / 4', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                        Text('Thông tin xe', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -411,7 +411,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Your Garage', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
+                    Text('Nhà xe của tôi', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVehicleScreen()));
@@ -423,7 +423,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                           children: [
                             const Icon(Icons.add, size: 14, color: AppTheme.primaryBlue),
                             const SizedBox(width: 4),
-                            Text('Add New', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                            Text('Thêm mới', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
                           ],
                         ),
                       ),
@@ -509,7 +509,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                                           children: [
                                             const Icon(Icons.history, size: 14, color: AppTheme.primaryBlue),
                                             const SizedBox(width: 6),
-                                            Text('Last Service: Oct 12, 2023', style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.textSecondary)),
+                                            Text('Dịch vụ gần nhất: 12/10/2023', style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.textSecondary)),
                                           ],
                                         ),
                                       ),
@@ -549,7 +549,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Selected', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                          Text('Đã chọn', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
                           Text(provider.selectedVehicle!.licensePlate, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.pristineNavy)),
                         ],
                       ),
@@ -570,7 +570,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                         ),
                         child: Row(
                           children: [
-                            Text('Confirm', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text('Xác nhận', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                             const SizedBox(width: 8),
                             const Icon(Icons.check_circle_rounded, size: 18, color: Colors.white),
                           ],

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:intl/intl.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
@@ -19,6 +20,8 @@ class StaffDashboardScreen extends StatefulWidget {
 }
 
 class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
+  int _selectedTab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -214,10 +217,31 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
     }
 
     if (booking.status == 'Pending' || booking.status == 'Confirmed') {
+      bool isTimeReached = true;
+      if (booking.timeSlotDisplay.contains('-')) {
+        try {
+          final startPart = booking.timeSlotDisplay.split('-')[0].trim();
+          final timeParts = startPart.split(':');
+          final scheduledStart = DateTime(
+            booking.bookingDate.year,
+            booking.bookingDate.month,
+            booking.bookingDate.day,
+            int.parse(timeParts[0]),
+            int.parse(timeParts[1]),
+          );
+          isTimeReached = DateTime.now().isAfter(scheduledStart);
+        } catch (_) {}
+      }
+
       return ElevatedButton(
-        onPressed: () => _updateStatus(booking.id, 2), // InProgress
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-        child: const Text('Bắt đầu rửa', style: TextStyle(color: Colors.white)),
+        onPressed: isTimeReached ? () => _updateStatus(booking.id, 2) : null, // InProgress
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isTimeReached ? Colors.orange : Colors.grey.shade400,
+        ),
+        child: Text(
+          isTimeReached ? 'Bắt đầu làm việc' : 'Chưa tới giờ',
+          style: const TextStyle(color: Colors.white),
+        ),
       );
     } 
     
@@ -247,12 +271,48 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
     return Text(booking.status, style: const TextStyle(color: Colors.grey));
   }
 
+  Widget _buildTabItem(int index, String label) {
+    final isSelected = _selectedTab == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedTab = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
+                width: 2,
+              ),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? AppTheme.primaryBlue : Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final bookingProvider = Provider.of<BookingProvider>(context);
     final stats = bookingProvider.staffStats;
     final currentUserId = authProvider.user?.userId ?? '';
+
+    final filteredBookings = bookingProvider.todayBookings.where((booking) {
+      if (_selectedTab == 0) {
+        return booking.staffId == null;
+      } else {
+        return booking.staffId == currentUserId;
+      }
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -290,14 +350,24 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                         ],
                       ),
                     ),
+                  // Tabs
+                  Container(
+                    color: Colors.white,
+                    child: Row(
+                      children: [
+                        _buildTabItem(0, 'Việc chưa nhận (${bookingProvider.todayBookings.where((b) => b.staffId == null).length})'),
+                        _buildTabItem(1, 'Việc của tôi (${bookingProvider.todayBookings.where((b) => b.staffId == currentUserId).length})'),
+                      ],
+                    ),
+                  ),
                   Expanded(
-                    child: bookingProvider.todayBookings.isEmpty
+                    child: filteredBookings.isEmpty
                         ? ListView(children: const [SizedBox(height: 100), Center(child: Text('Hiện tại không có công việc nào.'))])
                         : ListView.builder(
                             padding: const EdgeInsets.all(16),
-                            itemCount: bookingProvider.todayBookings.length,
+                            itemCount: filteredBookings.length,
                             itemBuilder: (context, index) {
-                              final booking = bookingProvider.todayBookings[index];
+                              final booking = filteredBookings[index];
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 elevation: 2,
@@ -311,8 +381,8 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            booking.timeSlotDisplay,
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                                            '${DateFormat('dd/MM/yyyy').format(booking.bookingDate)}  |  ${booking.timeSlotDisplay}',
+                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -335,14 +405,48 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                                       const SizedBox(height: 8),
                                       Text('Biển số xe: ${booking.vehiclePlate}', style: const TextStyle(fontSize: 14)),
                                       
-                                      // Show checklist if claimed by this staff and not completed
-                                      if (booking.staffId == currentUserId && booking.status != 'Completed')
+                                      // Show checklist if claimed by this staff and status is InProgress
+                                      if (booking.staffId == currentUserId && booking.status == 'InProgress')
                                         _buildChecklist(booking),
                                         
                                       if (booking.status == 'Completed' && booking.completionImageUrl != null)
                                         Padding(
                                           padding: const EdgeInsets.only(top: 12),
                                           child: Text('Đã hoàn thành (Có ảnh nghiệm thu)', style: TextStyle(color: Colors.green.shade700, fontStyle: FontStyle.italic)),
+                                        ),
+
+                                      // Show customer feedback review if available
+                                      if (booking.status == 'Completed' && booking.rating != null)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 12),
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber.withOpacity(0.08),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Khách đánh giá: ${booking.rating} / 5',
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange),
+                                                  ),
+                                                ],
+                                              ),
+                                              if (booking.reviewComment != null && booking.reviewComment!.isNotEmpty) ...[
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  'Phản hồi: "${booking.reviewComment}"',
+                                                  style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12, color: Colors.black87),
+                                                ),
+                                              ]
+                                            ],
+                                          ),
                                         ),
 
                                       const SizedBox(height: 16),

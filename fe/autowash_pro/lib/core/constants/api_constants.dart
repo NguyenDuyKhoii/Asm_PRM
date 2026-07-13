@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConstants {
-  static String get baseUrl => kIsWeb ? 'http://localhost:5048/api' : 'http://10.0.2.2:5048/api';
+  static const String baseUrl = 'https://arbitrary-ducky-ecosystem.ngrok-free.dev/api';
   
   // Auth
   static String get register => '$baseUrl/auth/register';

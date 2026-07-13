@@ -9,7 +9,7 @@ public interface IBookingRepository
     Task<BookingSummaryDTO> GetBookingSummaryAsync(Guid userId, CreateBookingDTO dto);
     Task<List<BookingListDTO>> GetUserBookingsAsync(Guid userId);
     Task<bool> CancelBookingAsync(Guid bookingId, Guid userId);
-    Task<List<BookingListDTO>> GetTodayBookingsAsync(DateTime today);
+    Task<List<BookingListDTO>> GetTodayBookingsAsync(Guid? staffId, DateTime today);
     Task<bool> UpdateStatusAsync(Guid bookingId, int newStatus);
     Task<bool> ClaimBookingAsync(Guid bookingId, Guid staffId);
     Task<bool> UpdateChecklistAsync(Guid bookingId, string checklistJson);

@@ -80,27 +80,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Logo & Title
-                      Container(
-                        width: 110,
-                        height: 110,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue,
-                          borderRadius: BorderRadius.circular(36),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryBlue.withAlpha(80),
-                              blurRadius: 40,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.local_car_wash_rounded, size: 56, color: Colors.white),
+                      Image.asset(
+                        'assets/images/autowashing_logo.png',
+                        width: 170,
+                        fit: BoxFit.contain,
                       ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 12),
 
                       Text(
-                        'AutoWash Pro',
+                        'AutoWashing',
                         style: GoogleFonts.outfit(
                           fontSize: 36,
                           fontWeight: FontWeight.w900,
@@ -109,10 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.3),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 4),
 
                       Text(
-                        'Experience super fast car wash',
+                        'Trải nghiệm dịch vụ rửa xe siêu nhanh',
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           color: AppTheme.textSecondary,
@@ -120,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
 
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 16),
 
                       // Glassmorphism Form Container
                       ClipRRect(
@@ -152,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     labelText: 'Email',
                                     prefixIcon: Icon(Icons.email_outlined, color: AppTheme.textMuted),
                                   ),
-                                  validator: (v) => v == null || v.isEmpty ? 'Please enter your email' : null,
+                                  validator: (v) => v == null || v.isEmpty ? 'Vui lòng nhập email của bạn' : null,
                                 ).animate().fadeIn(duration: 400.ms, delay: 300.ms).slideX(begin: -0.1),
 
                                 const SizedBox(height: 20),
@@ -163,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   obscureText: _obscurePassword,
                                   style: const TextStyle(color: AppTheme.textPrimary),
                                   decoration: InputDecoration(
-                                    labelText: 'Password',
+                                    labelText: 'Mật khẩu',
                                     prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.textMuted),
                                     suffixIcon: IconButton(
                                       icon: Icon(
@@ -173,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                     ),
                                   ),
-                                  validator: (v) => v == null || v.isEmpty ? 'Please enter your password' : null,
+                                  validator: (v) => v == null || v.isEmpty ? 'Vui lòng nhập mật khẩu của bạn' : null,
                                 ).animate().fadeIn(duration: 400.ms, delay: 400.ms).slideX(begin: -0.1),
 
                                 const SizedBox(height: 32),
@@ -219,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                                               )
                                             : Text(
-                                                'Login',
+                                                'Đăng nhập',
                                                 style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
                                               ),
                                       ),
@@ -233,13 +222,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Wrap(
                                   alignment: WrapAlignment.center,
                                   children: [
-                                    Text('Don\'t have an account? ', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 15)),
+                                    Text('Chưa có tài khoản? ', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 15)),
                                     GestureDetector(
                                       onTap: () {
                                         Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
                                       },
                                       child: Text(
-                                        'Register now',
+                                        'Đăng ký ngay',
                                         style: GoogleFonts.outfit(
                                           color: AppTheme.primaryBlue,
                                           fontWeight: FontWeight.w800,
@@ -255,6 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ).animate().fadeIn(duration: 600.ms, delay: 100.ms).slideY(begin: 0.1),
 
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

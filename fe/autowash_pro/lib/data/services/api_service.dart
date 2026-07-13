@@ -576,11 +576,27 @@ class ApiService {
 
   // ==================== HELPER ====================
   Map<String, dynamic> _handleResponse(http.Response response) {
-    final body = jsonDecode(response.body);
+    if (response.body.isEmpty) {
+      throw Exception('Phản hồi từ máy chủ trống (Mã lỗi: ${response.statusCode})');
+    }
+    
+    dynamic body;
+    try {
+      body = jsonDecode(response.body);
+    } catch (e) {
+      throw Exception('Định dạng dữ liệu không hợp lệ (Mã lỗi: ${response.statusCode})');
+    }
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return body;
+      if (body is Map<String, dynamic>) {
+        return body;
+      }
+      return {'data': body};
     } else {
-      throw Exception(body['message'] ?? 'An error occurred');
+      if (body is Map<String, dynamic> && body.containsKey('message')) {
+        throw Exception(body['message']);
+      }
+      throw Exception('Lỗi máy chủ (Mã lỗi: ${response.statusCode})');
     }
   }
 }

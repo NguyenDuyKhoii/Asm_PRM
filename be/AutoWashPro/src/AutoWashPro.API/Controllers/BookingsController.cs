@@ -113,8 +113,9 @@ public class BookingsController : ControllerBase
     {
         try
         {
+            var userId = GetUserId();
             var today = DateTime.UtcNow;
-            var bookings = await _bookingRepository.GetTodayBookingsAsync(today);
+            var bookings = await _bookingRepository.GetTodayBookingsAsync(userId, today);
             return Ok(ApiResponse<List<BookingListDTO>>.SuccessResponse(bookings));
         }
         catch (Exception ex)

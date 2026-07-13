@@ -104,18 +104,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withAlpha(25),
-                          borderRadius: BorderRadius.circular(36),
-                          boxShadow: [BoxShadow(color: AppTheme.primaryBlue.withAlpha(30), blurRadius: 30, spreadRadius: 5)],
-                        ),
-                        child: const Icon(Icons.local_car_wash_rounded, size: 64, color: AppTheme.primaryBlue),
+                       Image.asset(
+                        'assets/images/autowashing_logo.png',
+                        width: 170,
+                        fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 24),
-                      const Text('AutoWash Pro', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -1)),
+                      const Text('AutoWashing', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.textPrimary, letterSpacing: -1)),
                       const SizedBox(height: 8),
                       Text('Smart Car Wash Booking', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
                     ],

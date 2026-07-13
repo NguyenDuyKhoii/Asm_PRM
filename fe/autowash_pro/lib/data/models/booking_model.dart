@@ -131,6 +131,8 @@ class BookingListModel {
   final String? staffId;
   String? checklist;
   final String? completionImageUrl;
+  final int? rating;
+  final String? reviewComment;
 
   BookingListModel({
     required this.id,
@@ -144,6 +146,8 @@ class BookingListModel {
     this.staffId,
     this.checklist,
     this.completionImageUrl,
+    this.rating,
+    this.reviewComment,
   });
 
   factory BookingListModel.fromJson(Map<String, dynamic> json) {
@@ -159,6 +163,8 @@ class BookingListModel {
       staffId: json['staffId'],
       checklist: json['checklist'],
       completionImageUrl: json['completionImageUrl'],
+      rating: json['rating'],
+      reviewComment: json['reviewComment'],
     );
   }
 }

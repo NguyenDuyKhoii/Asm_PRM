@@ -110,7 +110,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Our Services',
+                            'Dịch vụ của chúng tôi',
                             style: GoogleFonts.outfit(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
@@ -119,7 +119,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                             ),
                           ),
                           Text(
-                            'Taking care of your car in the best way',
+                            'Chăm sóc tốt nhất cho xế yêu của bạn',
                             style: GoogleFonts.outfit(
                               fontSize: 13,
                               color: AppTheme.textSecondary,
@@ -142,10 +142,10 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       physics: const BouncingScrollPhysics(),
                       children: [
-                        _categoryChip('All', Icons.grid_view_rounded),
-                        _categoryChip('Car Wash', Icons.local_car_wash_rounded),
-                        _categoryChip('Care', Icons.auto_awesome_rounded),
-                        _categoryChip('Polishing', Icons.cleaning_services_rounded),
+                        _categoryChip('All', 'Tất cả', Icons.grid_view_rounded),
+                        _categoryChip('Car Wash', 'Rửa xe', Icons.local_car_wash_rounded),
+                        _categoryChip('Care', 'Chăm sóc', Icons.auto_awesome_rounded),
+                        _categoryChip('Polishing', 'Đánh bóng', Icons.cleaning_services_rounded),
                       ],
                     ),
                   ),
@@ -184,7 +184,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                               Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textMuted.withAlpha(100)),
                               const SizedBox(height: 16),
                               Text(
-                                'No suitable services found',
+                                'Không tìm thấy dịch vụ phù hợp',
                                 style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -226,7 +226,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
     );
   }
 
-  Widget _categoryChip(String title, IconData icon) {
+  Widget _categoryChip(String title, String display, IconData icon) {
     final isSelected = _selectedCategory == title;
     return GestureDetector(
       onTap: () {
@@ -260,7 +260,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
             Icon(icon, size: 16, color: isSelected ? Colors.white : AppTheme.textSecondary),
             const SizedBox(width: 8),
             Text(
-              title,
+              display,
               style: GoogleFonts.outfit(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
@@ -410,7 +410,7 @@ class _ServiceListItem extends StatelessWidget {
                                       border: Border.all(color: accentColor.withAlpha(50), width: 1),
                                     ),
                                     child: Text(
-                                      'BEST SELLER',
+                                      'BÁN CHẠY',
                                       style: GoogleFonts.outfit(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w900,

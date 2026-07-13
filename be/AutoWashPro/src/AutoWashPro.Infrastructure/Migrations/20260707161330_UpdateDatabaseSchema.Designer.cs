@@ -3,6 +3,7 @@ using System;
 using AutoWashPro.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AutoWashPro.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260707161330_UpdateDatabaseSchema")]
+    partial class UpdateDatabaseSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,15 +34,6 @@ namespace AutoWashPro.Infrastructure.Migrations
                     b.Property<DateTime>("BookingDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Checklist")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("CompletionImageUrl")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -52,9 +46,6 @@ namespace AutoWashPro.Infrastructure.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<Guid>("ServiceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("StaffId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
@@ -83,103 +74,6 @@ namespace AutoWashPro.Infrastructure.Migrations
                     b.HasIndex("VehicleId");
 
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.Chemical", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<decimal>("CurrentStock")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MinimumStock")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Chemicals");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.ChemicalLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("BookingId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("ChangeAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("ChemicalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("ChemicalId");
-
-                    b.ToTable("ChemicalLogs");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.Review", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Comment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("AutoWashPro.Domain.Entities.Reward", b =>
@@ -256,31 +150,6 @@ namespace AutoWashPro.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.ServiceChemical", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ChemicalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("QuantityPerWash")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChemicalId");
-
-                    b.HasIndex("ServiceId", "ChemicalId")
-                        .IsUnique();
-
-                    b.ToTable("ServiceChemicals");
                 });
 
             modelBuilder.Entity("AutoWashPro.Domain.Entities.TimeSlot", b =>
@@ -463,62 +332,6 @@ namespace AutoWashPro.Infrastructure.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.ChemicalLog", b =>
-                {
-                    b.HasOne("AutoWashPro.Domain.Entities.Booking", "Booking")
-                        .WithMany("ChemicalLogs")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("AutoWashPro.Domain.Entities.Chemical", "Chemical")
-                        .WithMany("ChemicalLogs")
-                        .HasForeignKey("ChemicalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Chemical");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.Review", b =>
-                {
-                    b.HasOne("AutoWashPro.Domain.Entities.Booking", "Booking")
-                        .WithOne("Review")
-                        .HasForeignKey("AutoWashPro.Domain.Entities.Review", "BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AutoWashPro.Domain.Entities.User", "User")
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.ServiceChemical", b =>
-                {
-                    b.HasOne("AutoWashPro.Domain.Entities.Chemical", "Chemical")
-                        .WithMany("ServiceChemicals")
-                        .HasForeignKey("ChemicalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AutoWashPro.Domain.Entities.Service", "Service")
-                        .WithMany("ServiceChemicals")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chemical");
-
-                    b.Navigation("Service");
-                });
-
             modelBuilder.Entity("AutoWashPro.Domain.Entities.Vehicle", b =>
                 {
                     b.HasOne("AutoWashPro.Domain.Entities.User", "User")
@@ -549,20 +362,6 @@ namespace AutoWashPro.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.Booking", b =>
-                {
-                    b.Navigation("ChemicalLogs");
-
-                    b.Navigation("Review");
-                });
-
-            modelBuilder.Entity("AutoWashPro.Domain.Entities.Chemical", b =>
-                {
-                    b.Navigation("ChemicalLogs");
-
-                    b.Navigation("ServiceChemicals");
-                });
-
             modelBuilder.Entity("AutoWashPro.Domain.Entities.Reward", b =>
                 {
                     b.Navigation("Vouchers");
@@ -571,8 +370,6 @@ namespace AutoWashPro.Infrastructure.Migrations
             modelBuilder.Entity("AutoWashPro.Domain.Entities.Service", b =>
                 {
                     b.Navigation("Bookings");
-
-                    b.Navigation("ServiceChemicals");
                 });
 
             modelBuilder.Entity("AutoWashPro.Domain.Entities.TimeSlot", b =>
@@ -583,8 +380,6 @@ namespace AutoWashPro.Infrastructure.Migrations
             modelBuilder.Entity("AutoWashPro.Domain.Entities.User", b =>
                 {
                     b.Navigation("Bookings");
-
-                    b.Navigation("Reviews");
 
                     b.Navigation("Vehicles");
 
