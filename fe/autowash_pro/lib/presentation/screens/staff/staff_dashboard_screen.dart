@@ -11,6 +11,7 @@ import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/providers/booking_provider.dart';
 import 'package:autowash_pro/presentation/screens/auth/login_screen.dart';
 import 'package:autowash_pro/data/models/booking_model.dart';
+import 'package:autowash_pro/data/models/checklist_task_model.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
   const StaffDashboardScreen({super.key});
@@ -34,25 +35,25 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
 
   Map<String, String> _getChecklistForService(String serviceName) {
     final lower = serviceName.toLowerCase();
-    if (lower.contains('basic')) {
+    if (lower.contains('basic') || lower.contains('cơ bản')) {
       return {
         'exterior_high': 'Rửa ngoại thất áp suất cao',
         'hand_dry': 'Lau khô bằng tay',
         'tire_shine': 'Xịt bóng lốp'
       };
-    } else if (lower.contains('premium')) {
+    } else if (lower.contains('premium') || lower.contains('cao cấp')) {
       return {
         'exterior_wash': 'Rửa ngoại thất',
         'interior_basic': 'Vệ sinh nội thất cơ bản',
         'vacuum_seats': 'Hút bụi sàn và ghế'
       };
-    } else if (lower.contains('wash & vacuum') || lower.contains('wash and vacuum')) {
+    } else if (lower.contains('wash & vacuum') || lower.contains('wash and vacuum') || lower.contains('hút bụi')) {
       return {
         'exterior_full': 'Rửa ngoại thất toàn diện',
         'vacuum_full': 'Hút bụi nội thất toàn diện',
         'dashboard': 'Vệ sinh bảng điều khiển'
       };
-    } else if (lower.contains('comprehensive')) {
+    } else if (lower.contains('comprehensive') || lower.contains('toàn diện')) {
       return {
         'wash_vacuum': 'Rửa và Hút bụi',
         'paint_polish': 'Đánh bóng sơn',
@@ -97,23 +98,6 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
     }
   }
 
-  Future<void> _toggleChecklist(BookingListModel booking, String itemKey, bool currentValue) async {
-    Map<String, dynamic> currentChecklist = {};
-    if (booking.checklist != null && booking.checklist!.isNotEmpty) {
-      try {
-        currentChecklist = jsonDecode(booking.checklist!);
-      } catch (_) {}
-    }
-    currentChecklist[itemKey] = !currentValue;
-
-    final success = await Provider.of<BookingProvider>(context, listen: false).updateChecklist(booking.id, currentChecklist);
-    if (!mounted) return;
-    if (!success) {
-      final error = Provider.of<BookingProvider>(context, listen: false).error;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error ?? 'Không thể lưu kiểm tra')));
-    }
-  }
-
   Future<String?> _uploadToCloudinary(XFile imageFile) async {
     const String cloudName = 'dpcjk1tab';
     const String apiKey = '263482225152376';
@@ -145,10 +129,14 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
     return null;
   }
 
-  Future<void> _completeBookingWithPhoto(String bookingId) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    if (image == null) return;
+  Future<void> _completeBooking(BookingListModel booking, List<ChecklistTaskModel> tasks) async {
+    String firstPhoto = '';
+    for (var t in tasks) {
+      if (t.photos.isNotEmpty) {
+        firstPhoto = t.photos.first;
+        break;
+      }
+    }
 
     if (!mounted) return;
     showDialog(
@@ -157,46 +145,198 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    final imageUrl = await _uploadToCloudinary(image);
+    final success = await Provider.of<BookingProvider>(context, listen: false).completeBooking(booking.id, firstPhoto);
     if (!mounted) return;
-    Navigator.pop(context); // close dialog
+    Navigator.pop(context); // close spinner
 
-    if (imageUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lỗi tải ảnh lên. Vui lòng thử lại.')));
-      return;
-    }
-
-    final success = await Provider.of<BookingProvider>(context, listen: false).completeBooking(bookingId, imageUrl);
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hoàn thành công việc thành công!')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hoàn thành đơn hàng thành công!')));
     } else {
       final error = Provider.of<BookingProvider>(context, listen: false).error;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error ?? 'Có lỗi xảy ra')));
     }
   }
 
   Widget _buildChecklist(BookingListModel booking) {
-    Map<String, dynamic> parsed = {};
-    if (booking.checklist != null && booking.checklist!.isNotEmpty) {
-      try { parsed = jsonDecode(booking.checklist!); } catch (_) {}
-    }
-
-    final items = _getChecklistForService(booking.serviceName);
+    final defaultItems = _getChecklistForService(booking.serviceName);
+    final tasks = ChecklistTaskModel.fromJsonString(booking.checklist, defaultItems);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(),
-        const Text('Danh sách kiểm tra (Checklist):', style: TextStyle(fontWeight: FontWeight.bold)),
-        ...items.entries.map((e) {
-          final isChecked = parsed[e.key] == true;
-          return CheckboxListTile(
-            title: Text(e.value),
-            value: isChecked,
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            onChanged: booking.status == 'InProgress' ? (val) => _toggleChecklist(booking, e.key, isChecked) : null,
+        const Text(
+          'Danh sách kiểm tra & Ảnh nghiệm thu:',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        ...tasks.map((task) {
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            color: Colors.grey.shade50,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: task.completed,
+                        activeColor: AppTheme.success,
+                        onChanged: booking.status == 'InProgress'
+                            ? (val) async {
+                                task.completed = val == true;
+                                final checklistMap = ChecklistTaskModel.toJsonMap(tasks);
+                                final success = await Provider.of<BookingProvider>(context, listen: false)
+                                    .updateChecklist(booking.id, checklistMap);
+                                if (!mounted) return;
+                                if (!success) {
+                                  final error = Provider.of<BookingProvider>(context, listen: false).error;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(error ?? 'Không thể cập nhật')),
+                                  );
+                                }
+                              }
+                            : null,
+                      ),
+                      Expanded(
+                        child: Text(
+                          task.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            decoration: task.completed ? TextDecoration.lineThrough : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+                    child: Text(
+                      task.hint,
+                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey.shade600),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: SizedBox(
+                      height: 80,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          ...task.photos.map((photoUrl) {
+                            return Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(photoUrl, fit: BoxFit.cover),
+                                  ),
+                                ),
+                                if (booking.status == 'InProgress')
+                                  Positioned(
+                                    top: 2,
+                                    right: 10,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        task.photos.remove(photoUrl);
+                                        if (task.photos.isEmpty) {
+                                          task.completed = false;
+                                        }
+                                        final checklistMap = ChecklistTaskModel.toJsonMap(tasks);
+                                        final success = await Provider.of<BookingProvider>(context, listen: false)
+                                            .updateChecklist(booking.id, checklistMap);
+                                        if (!mounted) return;
+                                        if (!success) {
+                                          final error = Provider.of<BookingProvider>(context, listen: false).error;
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text(error ?? 'Không thể xóa ảnh')),
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.close, size: 12, color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          }),
+                          if (booking.status == 'InProgress')
+                            GestureDetector(
+                              onTap: () async {
+                                final ImagePicker picker = ImagePicker();
+                                final XFile? image = await picker.pickImage(source: ImageSource.camera);
+                                if (image == null) return;
+
+                                if (!mounted) return;
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                                );
+
+                                final uploadedUrl = await _uploadToCloudinary(image);
+                                if (!mounted) return;
+                                Navigator.pop(context); // Close spinner
+
+                                if (uploadedUrl == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Lỗi tải ảnh lên. Vui lòng thử lại.')),
+                                  );
+                                  return;
+                                }
+
+                                task.photos.add(uploadedUrl);
+                                task.completed = true;
+                                final checklistMap = ChecklistTaskModel.toJsonMap(tasks);
+                                final success = await Provider.of<BookingProvider>(context, listen: false)
+                                    .updateChecklist(booking.id, checklistMap);
+                                if (!mounted) return;
+                                if (!success) {
+                                  final error = Provider.of<BookingProvider>(context, listen: false).error;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(error ?? 'Không thể lưu ảnh')),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: const Icon(Icons.add_a_photo_rounded, color: Colors.grey),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         }),
       ],
@@ -246,25 +386,16 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
     } 
     
     if (booking.status == 'InProgress') {
-      // Check if all checklist items are done
-      Map<String, dynamic> parsed = {};
-      if (booking.checklist != null && booking.checklist!.isNotEmpty) {
-        try { parsed = jsonDecode(booking.checklist!); } catch (_) {}
-      }
-      
-      final items = _getChecklistForService(booking.serviceName);
-      bool allChecked = true;
-      for (var key in items.keys) {
-        if (parsed[key] != true) {
-          allChecked = false;
-          break;
-        }
-      }
+      final defaultItems = _getChecklistForService(booking.serviceName);
+      final tasks = ChecklistTaskModel.fromJsonString(booking.checklist, defaultItems);
+      bool canComplete = tasks.every((t) => t.completed && t.photos.isNotEmpty);
 
       return ElevatedButton(
-        onPressed: allChecked ? () => _completeBookingWithPhoto(booking.id) : null,
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-        child: const Text('Chụp ảnh & Hoàn thành', style: TextStyle(color: Colors.white)),
+        onPressed: canComplete ? () => _completeBooking(booking, tasks) : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: canComplete ? Colors.green : Colors.grey.shade400,
+        ),
+        child: const Text('Hoàn thành đơn hàng', style: TextStyle(color: Colors.white)),
       );
     }
 
@@ -322,7 +453,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await authProvider.logout();
-              if (!mounted) return;
+              if (!context.mounted) return;
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
           ),
@@ -340,7 +471,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                   if (stats != null)
                     Container(
                       padding: const EdgeInsets.all(16),
-                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      color: AppTheme.primaryBlue.withValues(alpha: 0.1),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -387,7 +518,7 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: booking.status == 'Completed' ? Colors.green.withOpacity(0.1) : AppTheme.primaryBlue.withOpacity(0.1),
+                                              color: booking.status == 'Completed' ? Colors.green.withValues(alpha: 0.1) : AppTheme.primaryBlue.withValues(alpha: 0.1),
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
@@ -421,9 +552,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                                           margin: const EdgeInsets.only(top: 12),
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: Colors.amber.withOpacity(0.08),
+                                            color: Colors.amber.withValues(alpha: 0.08),
                                             borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                                            border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                                           ),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,

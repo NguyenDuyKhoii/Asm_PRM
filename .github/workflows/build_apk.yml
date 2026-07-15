@@ -1,0 +1,68 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build & Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up JDK 17 (Required for modern Android/Gradle build system)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. Set up Flutter environment
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 4. Install dependencies inside the Flutter frontend directory
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: fe/autowash_pro
+
+      # 5. Build Release APK (unsigned)
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: fe/autowash_pro
+
+      # 6. Upload APK as an Artifact for general pushes
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: fe/autowash_pro/build/app/outputs/flutter-apk/app-release.apk
+
+      # 7. Create or Update GitHub Release and attach the APK
+      - name: Create or Update Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'APK' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('Release {0}', github.ref_name) || 'AutoWash' }}
+          body: |
+            Tự động phát hành bản build APK từ GitHub Actions.
+            * Nhánh/Thẻ: `${{ github.ref_name }}`
+            * Commit mới nhất: ${{ github.sha }}
+          draft: false
+          prerelease: false
+          files: fe/autowash_pro/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
