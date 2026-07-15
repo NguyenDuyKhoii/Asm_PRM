@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:autowash_pro/core/theme/app_theme.dart';
 import 'package:autowash_pro/presentation/providers/auth_provider.dart';
 import 'package:autowash_pro/presentation/screens/auth/login_screen.dart';
+import 'package:autowash_pro/data/models/checklist_task_model.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -770,6 +771,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ],
             )
+          ],
+          if (status.toLowerCase() == 'completed' || status.toLowerCase() == 'inprogress') ...[
+            const Divider(height: 20, thickness: 0.8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _showChecklistBottomSheet(booking),
+                icon: const Icon(Icons.photo_library_rounded, size: 14),
+                label: Text('Xem tiến độ & Ảnh nghiệm thu', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.primaryBlue,
+                  side: const BorderSide(color: AppTheme.primaryBlue, width: 1.2),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
           ]
         ],
       ),
@@ -2329,7 +2347,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 DropdownButtonFormField<String>(
                   decoration: const InputDecoration(labelText: 'Chọn hóa chất'),
-                  value: selectedChemicalId,
+                  initialValue: selectedChemicalId,
                   items: _chemicals.map<DropdownMenuItem<String>>((c) {
                     return DropdownMenuItem(value: c['id'] as String, child: Text('${c['name']} (${c['unit']})'));
                   }).toList(),
@@ -2596,6 +2614,278 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showChecklistBottomSheet(dynamic booking) {
+    final String serviceName = booking['serviceName'] ?? '';
+    final String vehiclePlate = booking['vehiclePlate'] ?? '';
+    final String? checklistJson = booking['checklist'];
+
+    Map<String, String> resolvedDefaults = {};
+    final lower = serviceName.toLowerCase();
+    if (lower.contains('basic') || lower.contains('cơ bản')) {
+      resolvedDefaults = {
+        'exterior_high': 'Rửa ngoại thất áp suất cao',
+        'hand_dry': 'Lau khô bằng tay',
+        'tire_shine': 'Xịt bóng lốp'
+      };
+    } else if (lower.contains('premium') || lower.contains('cao cấp')) {
+      resolvedDefaults = {
+        'exterior_wash': 'Rửa ngoại thất',
+        'interior_basic': 'Vệ sinh nội thất cơ bản',
+        'vacuum_seats': 'Hút bụi sàn và ghế'
+      };
+    } else if (lower.contains('wash & vacuum') || lower.contains('wash and vacuum') || lower.contains('hút bụi')) {
+      resolvedDefaults = {
+        'exterior_full': 'Rửa ngoại thất toàn diện',
+        'vacuum_full': 'Hút bụi nội thất toàn diện',
+        'dashboard': 'Vệ sinh bảng điều khiển'
+      };
+    } else if (lower.contains('comprehensive') || lower.contains('toàn diện')) {
+      resolvedDefaults = {
+        'wash_vacuum': 'Rửa và Hút bụi',
+        'paint_polish': 'Đánh bóng sơn',
+        'plastic_trim': 'Dưỡng nhựa nhám',
+        'fragrance': 'Khử mùi, tạo hương thơm'
+      };
+    } else if (lower.contains('interior')) {
+      resolvedDefaults = {
+        'interior_deep': 'Vệ sinh nội thất sâu',
+        'seat_wash': 'Giặt ghế',
+        'ceiling_clean': 'Vệ sinh trần xe',
+        'leather_cond': 'Dưỡng da'
+      };
+    } else {
+      resolvedDefaults = {
+        'exterior': 'Rửa ngoại thất',
+        'interior': 'Hút bụi nội thất',
+        'tires': 'Xịt bóng lốp'
+      };
+    }
+
+    final tasks = ChecklistTaskModel.fromJsonString(checklistJson, resolvedDefaults);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tiến độ & Ảnh nghiệm thu',
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$serviceName  |  Xe: $vehiclePlate',
+                          style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+              Expanded(
+                child: tasks.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Chưa có thông tin danh sách kiểm tra.',
+                          style: GoogleFonts.outfit(color: AppTheme.textSecondary),
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: tasks.length,
+                        itemBuilder: (context, idx) {
+                          final task = tasks[idx];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      task.completed
+                                          ? Icons.check_circle_rounded
+                                          : Icons.radio_button_unchecked_rounded,
+                                      color: task.completed ? AppTheme.success : Colors.grey,
+                                      size: 22,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        task.name,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: task.completed ? AppTheme.textPrimary : AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    if (task.completed)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.success.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          'Hoàn thành',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppTheme.success,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                if (task.photos.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: 90,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: task.photos.length,
+                                      itemBuilder: (context, photoIdx) {
+                                        final url = task.photos[photoIdx];
+                                        return GestureDetector(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (ctx) => Dialog(
+                                                backgroundColor: Colors.black.withValues(alpha: 0.9),
+                                                insetPadding: EdgeInsets.zero,
+                                                child: Stack(
+                                                  fit: StackFit.expand,
+                                                  children: [
+                                                    InteractiveViewer(
+                                                      child: Image.network(url, fit: BoxFit.contain),
+                                                    ),
+                                                    Positioned(
+                                                      top: 40,
+                                                      right: 20,
+                                                      child: IconButton(
+                                                        icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
+                                                        onPressed: () => Navigator.pop(ctx),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            margin: const EdgeInsets.only(right: 8),
+                                            width: 90,
+                                            height: 90,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(color: Colors.grey.shade300),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: Image.network(
+                                                url,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) => Container(
+                                                  color: Colors.grey.shade200,
+                                                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ] else if (task.completed) ...[
+                                  const SizedBox(height: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 34),
+                                    child: Text(
+                                      'Đã hoàn thành.',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade500,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                ] else ...[
+                                  const SizedBox(height: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 34),
+                                    child: Text(
+                                      'Chờ thực hiện...',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade500,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

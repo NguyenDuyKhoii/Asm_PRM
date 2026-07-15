@@ -105,7 +105,9 @@ public class AdminController : ControllerBase
                 Status = b.Status.ToString(),
                 QrCode = b.QrCode,
                 StaffId = b.StaffId,
-                StaffName = b.StaffId != null && staffNames.ContainsKey(b.StaffId.Value) ? staffNames[b.StaffId.Value] : null
+                StaffName = b.StaffId != null && staffNames.ContainsKey(b.StaffId.Value) ? staffNames[b.StaffId.Value] : null,
+                Checklist = b.Checklist,
+                CompletionImageUrl = b.CompletionImageUrl
             }).ToList();
 
             return Ok(ApiResponse<List<AdminBookingDTO>>.SuccessResponse(bookingsList));
@@ -973,6 +975,8 @@ public class AdminBookingDTO
     public string QrCode { get; set; } = string.Empty;
     public Guid? StaffId { get; set; }
     public string? StaffName { get; set; }
+    public string? Checklist { get; set; }
+    public string? CompletionImageUrl { get; set; }
 }
 
 public class UpdateBookingStatusDTO

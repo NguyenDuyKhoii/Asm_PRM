@@ -1,0 +1,68 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build & Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up JDK 17 (Required for modern Android/Gradle build system)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. Set up Flutter environment
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 4. Install dependencies inside the Flutter frontend directory
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: fe/autowash_pro
+
+      # 5. Build Release APK (unsigned)
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: fe/autowash_pro
+
+      # 6. Upload APK as an Artifact for general pushes
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: fe/autowash_pro/build/app/outputs/flutter-apk/app-release.apk
+
+      # 7. Create a GitHub Release and attach the APK when a tag is pushed (e.g., v1.0.0)
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: fe/autowash_pro/build/app/outputs/flutter-apk/app-release.apk
+          name: Release ${{ github.ref_name }}
+          body: |
+            Tự động phát hành phiên bản mới ${{ github.ref_name }} từ GitHub Actions.
+            
+            **Tải xuống cài đặt:**
+            * [app-release.apk](fe/autowash_pro/build/app/outputs/flutter-apk/app-release.apk)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
